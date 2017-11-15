@@ -107,7 +107,7 @@ class WC_Gateway_FastSpring_Handler {
    */
   public function listen_webhook_request() {
 
-    $this->log(file_get_contents('php://input'));
+    // $this->log(file_get_contents('php://input'));
 
     $events = json_decode(file_get_contents('php://input'));
 
@@ -305,9 +305,10 @@ class WC_Gateway_FastSpring_Handler {
     $orders = $this->search_orders(["search_key" => "_transaction_id", "search_value" => $id]);
 
     if (sizeof($orders) === 1) {
+      $this->log(sprintf('Order found with transaction ID %s', $id));
       return wc_get_order($orders[0]->ID);
-
     }
+
     $this->log(sprintf('No order found with transaction ID %s', $id));
     throw new Exception(sprintf('Unable to locate order with FS transaction ID %s', $id));
   }
@@ -321,9 +322,6 @@ class WC_Gateway_FastSpring_Handler {
    * @return array JSON response
    */
   public function handle_webhook_request($payload) {
-
-
-    
 
     try {
       switch ($payload->type) {

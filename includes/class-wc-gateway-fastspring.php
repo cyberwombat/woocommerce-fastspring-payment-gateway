@@ -162,7 +162,7 @@ class WC_Gateway_FastSpring extends WC_Payment_Gateway {
     $total = WC()->cart->cart_contents_total;
     $discount = WC()->cart->discount_cart;
 
-    return $amount - $discount / ($total / $amount);
+    return $amount > 0 ? $amount - $discount / ($total / $amount) : $amount;
   }
 
   /**
@@ -178,6 +178,8 @@ class WC_Gateway_FastSpring extends WC_Payment_Gateway {
       $amount = $values['line_subtotal'] / $values['quantity'];
 
       $product = $values['data'];
+
+
 
       $item = array(
         'product' => $product->get_slug(),
