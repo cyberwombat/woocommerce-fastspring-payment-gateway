@@ -168,7 +168,7 @@ if (!class_exists('WC_FastSpring')):
       load_plugin_textdomain('woocommerce-gateway-fastspring', false, plugin_basename(dirname(__FILE__)) . '/languages');
 
       add_filter('woocommerce_checkout_fields', array($this, 'override_checkout_fields'), 20, 1);
-      add_filter( 'woocommerce_endpoint_order-pay_title', array($this, 'title_order_pending'), 10, 2);
+      add_filter('woocommerce_endpoint_order-pay_title', array($this, 'title_order_pending'), 10, 2);
       add_filter('woocommerce_payment_gateways', array($this, 'add_gateways'));
       add_filter('script_loader_tag', array($this, 'modify_loading_scripts'), 20, 2);
       add_filter('plugin_action_links_' . plugin_basename(__FILE__), array($this, 'plugin_action_links'));
@@ -202,7 +202,7 @@ if (!class_exists('WC_FastSpring')):
      * @return string 
      */
     function title_order_pending($title, $endpoint) {
-      return"Your order is almost complete";
+      return __("Your order is almost complete", 'woocommerce-gateway-fastspring');
     }
 
     /**

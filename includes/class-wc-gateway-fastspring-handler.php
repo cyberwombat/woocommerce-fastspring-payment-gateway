@@ -48,11 +48,13 @@ class WC_Gateway_FastSpring_Handler {
    if(! $allowed )
        wp_send_json_error('Access denied');
 
-    $order_id = absint(WC()->session->get('order_awaiting_payment'));
+    $order_id = absint(WC()->session->get('current_order'));
 
     $order = wc_get_order($order_id);
     $data = ['order_id' => $order->get_id()];
 
+    // Check for double calls
+    $order_status = $order->get_status();  
 
     // Popup closed with payment
     if ($order && $payload->reference) {
@@ -61,14 +63,15 @@ class WC_Gateway_FastSpring_Handler {
       WC()->cart->empty_cart();
 
       $order->set_transaction_id($payload->reference);
-      $order->update_status('pending', __('Order pending payment approval.', 'woocommerce'));
+      // We could habe a race condition where FS already called wenhook so lets not assume its pending
+      if($order_status != 'completed')
+        $order->update_status('pending', __('Order pending payment approval.', 'woocommerce'));
       $data = ["redirect_url" => WC_Gateway_FastSpring_Handler::get_return_url($order), 'order_id' => $order_id];
      
       wp_send_json($data);
     } else {
-      wp_send_json_error('Order not found');
-    }
-    
+      wp_send_json_error('Order not found - Order ID was');
+    }    
 
   }
 
@@ -79,17 +82,20 @@ class WC_Gateway_FastSpring_Handler {
    * @return string Receipt URL
    */
   static public function get_return_url($order = null) {
+
     if ($order) {
       $return_url = $order->get_checkout_order_received_url();
     } else {
       $return_url = wc_get_endpoint_url('order-received', '', wc_get_page_permalink('checkout'));
     }
-
+    
     if (is_ssl() || get_option('woocommerce_force_ssl_checkout') == 'yes') {
       $return_url = str_replace('http:', 'https:', $return_url);
     }
 
-    return apply_filters('woocommerce_get_return_url', $return_url, $order);
+    $filtered = apply_filters('woocommerce_get_return_url', $return_url, $order);
+  
+    return $filtered;
   }
 
   /**
@@ -302,11 +308,34 @@ class WC_Gateway_FastSpring_Handler {
    * @return WC_Order WooCommerce order
    */
   public function find_order_by_fastspring_id($id) {
-    $orders = $this->search_orders(["search_key" => "_transaction_id", "search_value" => $id]);
 
-    if (sizeof($orders) === 1) {
+
+    //  $orders = $this->search_orders(["search_key" => "_transaction_id", "search_value" => $id]);
+
+    // if (sizeof($orders) === 1) {
+
+    //   $this->log(sprintf('Order found with transaction ID %s', $id));
+    //   return wc_get_order($orders[0]->ID);
+    // } 
+
+    // // let's try a fallback
+    // $orders = wc_get_orders(array(
+    //    'transaction_id' => $id
+    //  ));
+
+    // if (sizeof($orders) > 0) {
+    //   $this->log(sprintf('Order found on second try with transaction ID %s', $id));
+    //   return $orders[0];
+    // }
+
+    // let's try a fallback
+    $orders = wc_get_orders(array(
+       '_transaction_id' => $id
+     ));
+
+    if (sizeof($orders) > 0) {
       $this->log(sprintf('Order found with transaction ID %s', $id));
-      return wc_get_order($orders[0]->ID);
+      return $orders[0];
     }
 
     $this->log(sprintf('No order found with transaction ID %s', $id));
@@ -416,9 +445,9 @@ class WC_Gateway_FastSpring_Handler {
     if (isset($args) && !is_array($args)) {
       $args = array();
     }
-    if (isset($query_args) && !is_array($query_args)) {
-      $query_args = array();
-    }
+    // if (isset($query_args) && !is_array($query_args)) {
+    //   $query_args = array();
+    // }
     $query_args = array();
     if (isset($search_args['search_key']) && ($search_args['search_key'] == "_order_id")) {
       if (isset($search_args['search_value']) && !empty($search_args['search_value'])) {

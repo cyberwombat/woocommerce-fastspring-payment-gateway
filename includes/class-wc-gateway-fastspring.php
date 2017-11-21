@@ -49,8 +49,17 @@ class WC_Gateway_FastSpring extends WC_Payment_Gateway {
     add_action('woocommerce_update_options_payment_gateways_' . $this->id, array($this, 'process_admin_options'));
     add_action('woocommerce_receipt_' . $this->id, array($this, 'payment_page'));
     add_action('woocommerce_api_wc_gateway_fastspring_commerce', array($this, 'return_handler'));
+    //add_filter( 'woocommerce_payment_complete_order_status', array($this, 'filter_woocommerce_payment_complete_order_status'), 10, 1 );
+
   }
 
+  /**
+   * Mark complete after payment
+   */
+   public function filter_woocommerce_payment_complete_order_status( $order_id ) {
+      return 'completed';
+  }
+ 
   /**
    * Check if this gateway is enabled
    */
@@ -243,6 +252,10 @@ class WC_Gateway_FastSpring extends WC_Payment_Gateway {
 
 
     $order_id = absint(WC()->session->get('order_awaiting_payment'));
+
+    // Set another session var that wont get erased - we need that for receipt
+    // We sometimes get a race condition
+    WC()->session->set( 'current_order', $order_id);
 
     $order = wc_get_order($order_id);
 
