@@ -83,7 +83,6 @@ class WC_Gateway_FastSpring extends WC_Payment_Gateway {
   public function init_form_fields() {
     $this->form_fields = include 'settings-fastspring.php';
   }
-
  
   /**
    * payment_scripts function.
@@ -97,6 +96,7 @@ class WC_Gateway_FastSpring extends WC_Payment_Gateway {
     if (is_checkout()) {
       $load_scripts = true;
     }
+
     if ($this->is_available()) {
       $load_scripts = true;
     }
@@ -139,7 +139,6 @@ class WC_Gateway_FastSpring extends WC_Payment_Gateway {
       'result' => 'success',
       'redirect' => $order->get_checkout_payment_url(true),
     );
-
   }
 
   /**
@@ -276,12 +275,22 @@ class WC_Gateway_FastSpring extends WC_Payment_Gateway {
   }
 
   /**
+   * Returns order ID as tag array for FS reference
+   *
+   * @return array
+   */
+  public function get_order_tags() {
+     return array( "store_order_id" => absint(WC()->session->get('order_awaiting_payment')));
+  }
+
+  /**
    * Builds JSON payload
    *
    * @return object
    */
   public function get_json_payload() {
     return array(
+      'tags' => $this->get_order_tags(),
       'contact' => $this->get_cart_customer_details(),
       'items' => $this->get_cart_items(),
     );
@@ -358,7 +367,7 @@ class WC_Gateway_FastSpring extends WC_Payment_Gateway {
   public function payment_page($order_id) {
     $order = wc_get_order($order_id);
 
-    echo '<p>' . sprintf(__('Thank you for your order, please click the button below to pay using %s.', 'woocommerce'), $this->option('title')) . '</p>';
+    // echo '<p>' . sprintf(__('Thank you for your order, please click the button below to pay using %s.', 'woocommerce'), $this->option('title')) . '</p>';
 
     $json = $this->get_secure_json_payload();
 

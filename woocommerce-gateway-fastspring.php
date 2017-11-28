@@ -4,11 +4,11 @@
  * Description: Take credit card payments on your store using FastSpring.
  * Author: Enradia
  * Author URI: https://enradia.com/
- * Version: 1.0.2
+ * Version: 1.0.3
  * Requires at least: 4.4
  * Tested up to: 4.8
  * WC requires at least: 3.0
- * WC tested up to: 3.1
+ * WC tested up to: 3.2
  * Text Domain: woocommerce-gateway-fastspring
  *
  */
@@ -202,7 +202,7 @@ if (!class_exists('WC_FastSpring')):
      * @return string 
      */
     function title_order_pending($title, $endpoint) {
-      return __("Your order is almost complete", 'woocommerce-gateway-fastspring');
+      return __("Enter Payment Info on Next Page", 'woocommerce-gateway-fastspring');
     }
 
     /**
