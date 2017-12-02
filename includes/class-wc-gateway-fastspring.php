@@ -161,15 +161,13 @@ class WC_Gateway_FastSpring extends WC_Payment_Gateway {
   }
 
   /**
-   * Calculates discountd item price based on overall discount share
+   * Calculates discounted item price based on overall discount share
    *
    * @return float
    */
   public function get_discount_item_amount($amount) {
-
-    $total = WC()->cart->cart_contents_total;
+    $total = WC()->cart->subtotal;
     $discount = WC()->cart->discount_cart;
-
     return $amount > 0 ? $amount - $discount / ($total / $amount) : $amount;
   }
 
@@ -183,6 +181,7 @@ class WC_Gateway_FastSpring extends WC_Payment_Gateway {
     $items = array();
 
     foreach (WC()->cart->cart_contents as $cart_item_key => $values) {
+
       $amount = $values['line_subtotal'] / $values['quantity'];
 
       $product = $values['data'];
