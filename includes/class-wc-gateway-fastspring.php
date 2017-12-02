@@ -257,9 +257,14 @@ class WC_Gateway_FastSpring extends WC_Payment_Gateway {
 
     $order = wc_get_order($order_id);
 
+    // Can't turn off FS receipts so we can optionally create a blackhole random address
+    $email = $this->option('blackhole') 
+      ? ('user_' . rand(10000000, 99999999) . '@' . $this->option('blackhole')) 
+      : $order->get_billing_email();
+
     return [
 
-      'email' => 'user_' . rand(10000, 99999) . '@software4recording.com', //$order->get_billing_email(),
+      'email' => $email,
       'firstName' => $order->get_billing_first_name(),
       'lastName' => $order->get_billing_last_name(),
       'company' => $order->get_billing_company(),
@@ -366,7 +371,8 @@ class WC_Gateway_FastSpring extends WC_Payment_Gateway {
   public function payment_page($order_id) {
     $order = wc_get_order($order_id);
 
-    // echo '<p>' . sprintf(__('Thank you for your order, please click the button below to pay using %s.', 'woocommerce'), $this->option('title')) . '</p>';
+    if($this->option('title'))
+      echo '<p>' . sprintf(__('Thank you for your order, please click the button below to pay using %s.', 'woocommerce'), $this->option('title')) . '</p>';
 
     $json = $this->get_secure_json_payload();
 
