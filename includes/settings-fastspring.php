@@ -42,12 +42,6 @@ return apply_filters('woocommerce-gateway-fastspring_settings',
       'description' => __('Save debug messages to the WooCommerce System Status log.', 'woocommerce-gateway-fastspring'),
       'default' => 'no',
     ),
-   'blackhole' => array(
-      'title' => __('Email domain', 'woocommerce-gateway-fastspring'),
-      'type' => 'text',
-      'description' => __('Optional blackhole email address domain to use to generate random user emails in order to disable FS receipts.', 'woocommerce-gateway-fastspring. Ex: '. site_url('?wc-api=wc_gateway_fastspring')),
-      'desc_tip' => false,
-    ),
     'storefront_path' => array(
       'title' => __('Storefront Path', 'woocommerce-gateway-fastspring'),
       'type' => 'text',

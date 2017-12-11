@@ -24,8 +24,6 @@ This plugin provides support only for the popup version of FastSpring. You will 
 
 Add your WP webhook url as found in the FS settings to the webhook section in the FS Integrations section.
 
-In the settings you will notice a field for blackhole email addresses. FastSpring does not provide a way to turn off their own receipts so one workaround is to setup your email provider to trash any unknown emails (i.e. 8274213@yourdomain.com). If you set this up and enter you domain (or any domain you have setup for this purpose) in the settings, the plugin will, instead of sending the customer's email to FS, generate a random email @yourdomain each time. Ensure that you are using your own domain and not some public blackhole domain where you cannot ensure your customer info is properly discarded.
-
 == Screenshots ==
  
 1. FastSpring admin dashboard.

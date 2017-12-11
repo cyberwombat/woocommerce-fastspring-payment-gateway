@@ -251,20 +251,21 @@ class WC_Gateway_FastSpring extends WC_Payment_Gateway {
 
     $order_id = absint(WC()->session->get('order_awaiting_payment'));
 
+    if(!$order_id) {
+       $this->log(sprintf('No  order found in session with ID %s', $order_id));
+       return [];
+    }
+
+
     // Set another session var that wont get erased - we need that for receipt
     // We sometimes get a race condition
     WC()->session->set( 'current_order', $order_id);
 
     $order = wc_get_order($order_id);
 
-    // Can't turn off FS receipts so we can optionally create a blackhole random address
-    $email = $this->option('blackhole') 
-      ? ('user_' . rand(10000000, 99999999) . '@' . $this->option('blackhole')) 
-      : $order->get_billing_email();
-
     return [
 
-      'email' => $email,
+      'email' => $order->get_billing_email(),
       'firstName' => $order->get_billing_first_name(),
       'lastName' => $order->get_billing_last_name(),
       'company' => $order->get_billing_company(),
