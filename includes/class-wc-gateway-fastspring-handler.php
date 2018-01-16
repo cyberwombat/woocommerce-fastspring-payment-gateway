@@ -3,6 +3,8 @@ if (!defined('ABSPATH')) {
   exit;
 }
 
+include_once dirname(__FILE__) . '/class-wc-gateway-fastspring-builder.php';
+
 /**
  * Base class to handle ajax and webhook request from FastSpring.
  *
@@ -79,6 +81,71 @@ class WC_Gateway_FastSpring_Handler {
   }
 
   /**
+   * AjAX call to checkout
+   */
+  public function ajax_checkout() {
+
+    $payload = json_decode(file_get_contents('php://input'));
+
+    $allowed = wp_verify_nonce($payload->security, 'wc-fastspring-receipt');
+
+    if (!$allowed) {
+      wp_send_json_error('Access denied');
+    }
+
+    wc_maybe_define_constant('WOOCOMMERCE_CHECKOUT', true);
+    WC()->checkout()->process_checkout();
+    wp_die(0);
+
+    // $order_id = absint(WC()->session->get('current_order'));
+
+    // $order = wc_get_order($order_id);
+    // $data = ['order_id' => $order->get_id()];
+
+    // // Check for double calls
+    // $order_status = $order->get_status();
+
+    // // Popup closed with payment
+    // if ($order && $payload->reference) {
+
+    //   // Remove cart
+    //   WC()->cart->empty_cart();
+
+    //   $order->set_transaction_id($payload->reference);
+    //   // We could habe a race condition where FS already called webhook so lets not assume its pending
+    //   if ($order_status != 'completed') {
+    //     $order->update_status('pending', __('Order pending payment approval.', 'woocommerce'));
+    //   }
+
+    //   $data = ["redirect_url" => WC_Gateway_FastSpring_Handler::get_return_url($order), 'order_id' => $order_id];
+
+    //   wp_send_json($data);
+    // } else {
+    //   wp_send_json_error('Order not found - Order ID was');
+    // }
+
+  }
+
+  /**
+   * AjAX call to fetch secure payload
+   */
+  public function ajax_get_payload() {
+
+    $payload = json_decode(file_get_contents('php://input'));
+
+    $allowed = wp_verify_nonce($payload->security, 'wc-fastspring-receipt');
+
+    if (!$allowed) {
+      wp_send_json_error('Access denied');
+    }
+
+    $p = WC_Gateway_FastSpring_Builder::get_secure_json_payload();
+
+    wp_send_json(($p));
+
+  }
+
+  /**
    * Get receipt URL
    *
    * @param object $order A Woo order
@@ -106,6 +173,7 @@ class WC_Gateway_FastSpring_Handler {
    */
   public function init() {
     add_action('wc_ajax_wc_fastspring_get_receipt', array($this, 'ajax_get_receipt'));
+    add_action('wc_ajax_wc_fastspring_get_payload', array($this, 'ajax_get_payload'));
 
     add_action('woocommerce_api_wc_gateway_fastspring', array($this, 'listen_webhook_request'));
     add_action('woocommerce_fastspring_handle_webhook_request', array($this, 'handle_webhook_request'));
@@ -116,13 +184,11 @@ class WC_Gateway_FastSpring_Handler {
    */
   public function listen_webhook_request() {
 
-    // $this->log(file_get_contents('php://input'));
-
     $events = json_decode(file_get_contents('php://input'));
 
     if (!$this->is_valid_webhook_request()) {
+      $this->log('Invalid webhook request - check secret');
       return wp_send_json_error();
-
     }
 
     foreach ($events as $event) {
@@ -222,7 +288,7 @@ class WC_Gateway_FastSpring_Handler {
 
     $order = $this->find_order_by_fastspring_tag($payload);
 
-    if ($order->payment_complete( $payload->reference)) {
+    if ($order->payment_complete($payload->reference)) {
       $this->log(sprintf('Marking order ID %s as complete', $order->get_id()));
       $order->add_order_note(sprintf(__('FastSpring payment approved (ID: %1$s)', 'woocommerce'), $order->get_id()));
     } else {
@@ -255,15 +321,20 @@ class WC_Gateway_FastSpring_Handler {
 
     $secret = $this->get_option('webhook_secret');
 
-    if (!$secret) {
-      $this->log('Invalid webhook secret');
-      return true;
-    }
-
     $headers = getallheaders();
     $hash = base64_encode(hash_hmac('sha256', file_get_contents('php://input'), $secret, true));
 
     $sig = $_SERVER['HTTP_X_FS_SIGNATURE'];
+
+    if (!$sig) {
+       $this->log('No secret provided by FastSpring webhook');
+      return true;
+    }
+
+    if (!$secret) {
+      $this->log('Invalid webhook secret');
+      return false;
+    }
 
     return $sig === $hash;
   }

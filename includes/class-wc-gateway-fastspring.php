@@ -33,9 +33,9 @@ class WC_Gateway_FastSpring extends WC_Payment_Gateway {
     $this->title = $this->option('title');
     $this->description = $this->option('description');
 
-    if ($this->option('enabled')) {
-      $this->order_button_text = __('Continue to payment', 'woocommerce-gateway-fastspring');
-    }
+    // if ($this->option('enabled')) {
+    //   $this->order_button_text = __('Continue to payment', 'woocommerce-gateway-fastspring');
+    // }
 
     if ($this->option('testmode')) {
       $this->description .= "\n" . sprintf(__('TEST MODE ENABLED. In test mode, you can use the card numbers provided in the test panel of the FastSpring dashboard. Please check the documentation "<a target="_blank" href="%s">Testing Orders</a>" for more information.', 'woocommerce-gateway-fastspring'), 'http://docs.fastspring.com/activity-events-orders-and-subscriptions/test-orders');
@@ -50,16 +50,102 @@ class WC_Gateway_FastSpring extends WC_Payment_Gateway {
     add_action('woocommerce_receipt_' . $this->id, array($this, 'payment_page'));
     add_action('woocommerce_api_wc_gateway_fastspring_commerce', array($this, 'return_handler'));
     //add_filter( 'woocommerce_payment_complete_order_status', array($this, 'filter_woocommerce_payment_complete_order_status'), 10, 1 );
+    // add_action('woocommerce_checkout_order_processed', array($this, 'action_order_processed'));
+    //  add_action('woocommerce_after_checkout_validation', array($this, 'action_prevent_submission'));
+
+  }
+
+  /**
+   * Validate access key settings field
+   *
+   * @params $value
+   */
+
+  public function validate_access_key_field($key, $value) {
+    if (!empty($value)) {
+      return $value;
+    }
+    WC_Admin_Settings::add_error(esc_html__('A FastSpring access key is required.', 'woocommerce-gateway-fastspring'));
+
+  }
+
+  /**
+   * Validate private key settings field
+   *
+   * @params $value
+   */
+  public function validate_private_key_field($key, $value) {
+
+    if (strpos($value, '-----BEGIN RSA PRIVATE KEY-----') !== false) {
+      return $value;
+    }
+    WC_Admin_Settings::add_error(esc_html__('The RSA private key field is invalid.', 'woocommerce-gateway-fastspring'));
+
+  }
+
+  /**
+   * Validate title settings field
+   *
+   * @params $value
+   */
+  public function validate_title_field($key, $value) {
+    if (empty($value)) {
+      WC_Admin_Settings::add_error(esc_html__('Enter a valid title.', 'woocommerce-gateway-fastspring'));
+    }
+    return $value;
+  }
+
+  /**
+   * Validate hosted storefront path settings field
+   *
+   * @params $value
+   */
+  public function validate_hosted_storefront_path_field($key, $value) {
+    if (!isset($_POST['woocommerce_fastspring_popup']) && empty($value)) {
+      WC_Admin_Settings::add_error(esc_html__('Enter a valid hosted storefront path.', 'woocommerce-gateway-fastspring'));
+    } else if (!empty($value)) {
+      return preg_replace('#^https?://#', '', rtrim($value, '/'));
+    }
+  }
+
+  /**
+   * Validate popup storefront path settings field
+   *
+   * @params $value
+   */
+  public function validate_storefront_path_field($key, $value) {
+
+    if (isset($_POST['woocommerce_fastspring_popup']) && empty($value)) {
+      WC_Admin_Settings::add_error(esc_html__('Enter a valid popup storefront path.', 'woocommerce-gateway-fastspring'));
+    } else if (!empty($value)) {
+      return preg_replace('#^https?://#', '', rtrim($value, '/'));
+    }
+  }
+
+ 
+
+  /**
+   * Hijack submission action
+   */
+
+  function action_prevent_submission($posted) {
+
+    if (isset($_POST['m_prevent_submit']) && wc_notice_count('error') == 0) {
+
+      wc_add_notice(__("custom_notice", 'm_example'), 'error');
+// change the data in $posted here
+
+    }
 
   }
 
   /**
    * Mark complete after payment
    */
-   public function filter_woocommerce_payment_complete_order_status( $order_id ) {
-      return 'completed';
+  public function filter_woocommerce_payment_complete_order_status($order_id) {
+    return 'completed';
   }
- 
+
   /**
    * Check if this gateway is enabled
    */
@@ -83,7 +169,7 @@ class WC_Gateway_FastSpring extends WC_Payment_Gateway {
   public function init_form_fields() {
     $this->form_fields = include 'settings-fastspring.php';
   }
- 
+
   /**
    * payment_scripts function.
    *
@@ -112,6 +198,10 @@ class WC_Gateway_FastSpring extends WC_Payment_Gateway {
       wp_enqueue_script('fastspring', WC_FASTSPRING_SCRIPT, '', false, true);
 
       wp_enqueue_script('woocommerce_fastspring', plugins_url('assets/js/fastspring-checkout' . $suffix . '.js', WC_FASTSPRING_MAIN_FILE), array('jquery', 'fastspring'), WC_FASTSPRING_VERSION, true);
+
+      // wp_dequeue_script('wc-checkout');
+      // // wp_enqueue_script('wc-checkout', 'wp-content/plugins/woocommerce/assets/js/frontend/checkout' . $suffix . '.js',
+      // //  array( 'jquery', 'woocommerce', 'wc-country-select', 'wc-address-i18n', 'fastspring-checkout' ), WC_VERSION, true);
 
     }
 
@@ -186,8 +276,6 @@ class WC_Gateway_FastSpring extends WC_Payment_Gateway {
 
       $product = $values['data'];
 
-
-
       $item = array(
         'product' => $product->get_slug(),
         'quantity' => $values['quantity'],
@@ -248,18 +336,16 @@ class WC_Gateway_FastSpring extends WC_Payment_Gateway {
    */
   public function get_cart_customer_details() {
 
-
     $order_id = absint(WC()->session->get('order_awaiting_payment'));
 
-    if(!$order_id) {
-       $this->log(sprintf('No  order found in session with ID %s', $order_id));
-       return [];
+    if (!$order_id) {
+      $this->log(sprintf('No  order found in session with ID %s', $order_id));
+      return [];
     }
-
 
     // Set another session var that wont get erased - we need that for receipt
     // We sometimes get a race condition
-    WC()->session->set( 'current_order', $order_id);
+    WC()->session->set('current_order', $order_id);
 
     $order = wc_get_order($order_id);
 
@@ -285,7 +371,7 @@ class WC_Gateway_FastSpring extends WC_Payment_Gateway {
    * @return array
    */
   public function get_order_tags() {
-     return array( "store_order_id" => absint(WC()->session->get('order_awaiting_payment')));
+    return array("store_order_id" => absint(WC()->session->get('order_awaiting_payment')));
   }
 
   /**
@@ -372,8 +458,9 @@ class WC_Gateway_FastSpring extends WC_Payment_Gateway {
   public function payment_page($order_id) {
     $order = wc_get_order($order_id);
 
-    if($this->option('title'))
+    if ($this->option('title')) {
       echo '<p>' . sprintf(__('Thank you for your order, please click the button below to pay using %s.', 'woocommerce'), $this->option('title')) . '</p>';
+    }
 
     $json = $this->get_secure_json_payload();
 
@@ -386,6 +473,5 @@ class WC_Gateway_FastSpring extends WC_Payment_Gateway {
 
     echo '<button class="button alt" data-fsc-action="Checkout">' . __('Enter payment info', 'woocommerce') . '</button> <a class="button cancel" href="' . esc_url($order->get_cancel_order_url()) . '">' . __('Cancel order &amp; restore cart', 'woocommerce') . '</a>';
   }
-
 
 }

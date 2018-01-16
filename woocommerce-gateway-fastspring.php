@@ -107,9 +107,13 @@ if (!class_exists('WC_FastSpring')):
      */
     protected function get_storefront_path() {
 
+      $sf = $this->get_option('popup') 
+        ? $this->get_option('storefront_path') 
+        : $this->get_option('hosted_storefront_path');
+
       return $this->get_option('testmode')
-      ? str_replace('onfastspring.com', 'test.onfastspring.com', $this->get_option('storefront_path'))
-      : str_replace('test.onfastspring.com', 'onfastspring.com', $this->get_option('storefront_path'));
+        ? str_replace('onfastspring.com', 'test.onfastspring.com', $sf)
+        : str_replace('test.onfastspring.com', 'onfastspring.com', $sf);
     }
 
     /**
@@ -123,7 +127,7 @@ if (!class_exists('WC_FastSpring')):
 
       if ('fastspring' === $handle) {
 
-        return str_replace(' src', ' id="fsc-api"  data-storefront="' . $this->get_storefront_path() . '" data-access-key="' . $this->get_option('access_key') . '" data-popup-closed="fastspringPopupCloseHandler" data-debug="false" src', $tag);
+        return str_replace(' src', ' id="fsc-api"  data-storefront="' . $this->get_storefront_path() . '" data-access-key="' . $this->get_option('access_key') . '" data-popup-closed="fastspringPopupCloseHandler" data-debug="true" src', $tag);
 
       }
       return $tag;
@@ -172,7 +176,6 @@ if (!class_exists('WC_FastSpring')):
       add_filter('woocommerce_payment_gateways', array($this, 'add_gateways'));
       add_filter('script_loader_tag', array($this, 'modify_loading_scripts'), 20, 2);
       add_filter('plugin_action_links_' . plugin_basename(__FILE__), array($this, 'plugin_action_links'));
-
       include_once dirname(__FILE__) . '/includes/class-wc-gateway-fastspring-handler.php';
     }
 
