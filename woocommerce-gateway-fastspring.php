@@ -4,7 +4,7 @@
  * Description: Take credit card payments on your store using FastSpring.
  * Author: Enradia
  * Author URI: https://enradia.com/
- * Version: 1.0.3
+ * Version: 1.0.4
  * Requires at least: 4.4
  * Tested up to: 4.8
  * WC requires at least: 3.0
@@ -134,23 +134,23 @@ if (!class_exists('WC_FastSpring')):
 
       // Possible FastSpring script tag values
       /*
-                  id="fsc-api"
-                  src="https://d1f8f9xcsvx3ha.cloudfront.net/sbl/0.7.3/fastspring-builder.min.js" type="text/javascript"
-                    data-storefront="vendor.test.onfastspring.com"
-                  data-data-callback="dataCallbackFunction"
-                  data-error-callback="errorCallback"
-                  data-before-requests-callback="beforeRequestsCallbackFunction"
-                  data-after-requests-callback="afterRequestsCallbackFunction"
-                  data-before-markup-callback="beforeMarkupCallbackFunction"
-                  data-after-markup-callback="afterMarkupCallbackFunction"
-                  data-decorate-callback="decorateURLFunction"
-                  data-popup-event-received="popupEventReceived"
-                  data-popup-webhook-received="popupWebhookReceived"
-                  data-popup-closed="onPopupClose"
-                  data-access-key=".. access key .."
-                  data-debug="true"
-                  data-continuous="true"
-*/
+      id="fsc-api"
+      src="https://d1f8f9xcsvx3ha.cloudfront.net/sbl/0.7.3/fastspring-builder.min.js" type="text/javascript"
+        data-storefront="vendor.test.onfastspring.com"
+      data-data-callback="dataCallbackFunction"
+      data-error-callback="errorCallback"
+      data-before-requests-callback="beforeRequestsCallbackFunction"
+      data-after-requests-callback="afterRequestsCallbackFunction"
+      data-before-markup-callback="beforeMarkupCallbackFunction"
+      data-after-markup-callback="afterMarkupCallbackFunction"
+      data-decorate-callback="decorateURLFunction"
+      data-popup-event-received="popupEventReceived"
+      data-popup-webhook-received="popupWebhookReceived"
+      data-popup-closed="onPopupClose"
+      data-access-key=".. access key .."
+      data-debug="true"
+      data-continuous="true"
+      */
 
     }
 

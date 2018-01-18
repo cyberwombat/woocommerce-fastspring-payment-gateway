@@ -25,7 +25,6 @@ class WC_Gateway_FastSpring_Handler {
   public function __construct() {
     $this->options = get_option('woocommerce_fastspring_settings', array());
     $this->init();
-
   }
 
   /**
@@ -75,7 +74,7 @@ class WC_Gateway_FastSpring_Handler {
 
       wp_send_json($data);
     } else {
-      wp_send_json_error('Order not found - Order ID was');
+      wp_send_json_error('Order not found - Order ID was' . $order_id);
     }
 
   }
@@ -96,34 +95,6 @@ class WC_Gateway_FastSpring_Handler {
     wc_maybe_define_constant('WOOCOMMERCE_CHECKOUT', true);
     WC()->checkout()->process_checkout();
     wp_die(0);
-
-    // $order_id = absint(WC()->session->get('current_order'));
-
-    // $order = wc_get_order($order_id);
-    // $data = ['order_id' => $order->get_id()];
-
-    // // Check for double calls
-    // $order_status = $order->get_status();
-
-    // // Popup closed with payment
-    // if ($order && $payload->reference) {
-
-    //   // Remove cart
-    //   WC()->cart->empty_cart();
-
-    //   $order->set_transaction_id($payload->reference);
-    //   // We could habe a race condition where FS already called webhook so lets not assume its pending
-    //   if ($order_status != 'completed') {
-    //     $order->update_status('pending', __('Order pending payment approval.', 'woocommerce'));
-    //   }
-
-    //   $data = ["redirect_url" => WC_Gateway_FastSpring_Handler::get_return_url($order), 'order_id' => $order_id];
-
-    //   wp_send_json($data);
-    // } else {
-    //   wp_send_json_error('Order not found - Order ID was');
-    // }
-
   }
 
   /**
@@ -194,29 +165,6 @@ class WC_Gateway_FastSpring_Handler {
     foreach ($events as $event) {
       do_action('woocommerce_fastspring_handle_webhook_request', $event);
     }
-  }
-
-  /**
-   * Finds one WC order by FastSpring transaction ID
-   *
-   * @deprecated We use tags now but this is a nice function so keep it
-   *
-   * @throws Exception
-   *
-   * @param string $id FastSpring transaction ID
-   * @return WC_Order WooCommerce order
-   */
-  public function find_order_by_fastspring_id($id) {
-    $orders = $this->search_orders(["search_key" => "_transaction_id", "search_value" => $id]);
-
-    if (sizeof($orders) === 1) {
-      $order = wc_get_order($orders[0]->ID);
-      $this->log(sprintf('Order %s found with transaction ID %s', $order->get_id(), $id));
-      return $order;
-    }
-
-    $this->log(sprintf('No order found with transaction ID %s', $id));
-    throw new Exception(sprintf('Unable to locate order with FS transaction ID %s', $id));
   }
 
   /**
@@ -327,7 +275,7 @@ class WC_Gateway_FastSpring_Handler {
     $sig = $_SERVER['HTTP_X_FS_SIGNATURE'];
 
     if (!$sig) {
-       $this->log('No secret provided by FastSpring webhook');
+      $this->log('No secret provided by FastSpring webhook');
       return true;
     }
 
@@ -337,51 +285,6 @@ class WC_Gateway_FastSpring_Handler {
     }
 
     return $sig === $hash;
-  }
-
-  /**
-   * Query database for orders by any query
-   *
-   * @param array $search_args
-   * @param array $args
-   * @param array $return
-   * @return array Matching orders
-   */
-  public function search_orders($search_args, $args = array(), $return = "") {
-    $default = array(
-      'numberposts' => -1,
-      'post_type' => wc_get_order_types('view-orders'),
-      'post_status' => array_keys(wc_get_order_statuses()),
-    );
-    if (isset($args) && !is_array($args)) {
-      $args = array();
-    }
-    // if (isset($query_args) && !is_array($query_args)) {
-    //   $query_args = array();
-    // }
-    $query_args = array();
-    if (isset($search_args['search_key']) && ($search_args['search_key'] == "_order_id")) {
-      if (isset($search_args['search_value']) && !empty($search_args['search_value'])) {
-        $query_args['meta_value'] = "";
-        $query_args['meta_key'] = "";
-        $query_args['post__in'] = array($search_args['search_value']);
-        $query_args['orderby'] = 'ID';
-      }
-    } else {
-      if (isset($search_args['search_value']) && !empty($search_args['search_value'])) {
-        $query_args['meta_value'] = $search_args['search_value'];
-        $query_args['meta_key'] = $search_args['search_key'];
-        $query_args['orderby'] = 'meta_value';
-      }
-    }
-
-    $args = array_merge($default, $args, $query_args);
-    if ($return == 'query_args') {
-      return $query_args;
-    }
-
-    $args = apply_filters('woocommerce_my_account_search_orders_query', $args);
-    return $customer_orders = get_posts($args);
   }
 
   /**

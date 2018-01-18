@@ -36,4 +36,7 @@ Add your WP webhook url as found in the FS settings to the webhook section in th
 = 1.0.3 =
 * Adjustement to discount calculation.
 
+= 1.0.4 =
+* Removed interim order confirm page - FS lauches right from checkout
+* Option to use hosted page or popup
 

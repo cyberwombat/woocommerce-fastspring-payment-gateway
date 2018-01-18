@@ -33,10 +33,6 @@ class WC_Gateway_FastSpring extends WC_Payment_Gateway {
     $this->title = $this->option('title');
     $this->description = $this->option('description');
 
-    // if ($this->option('enabled')) {
-    //   $this->order_button_text = __('Continue to payment', 'woocommerce-gateway-fastspring');
-    // }
-
     if ($this->option('testmode')) {
       $this->description .= "\n" . sprintf(__('TEST MODE ENABLED. In test mode, you can use the card numbers provided in the test panel of the FastSpring dashboard. Please check the documentation "<a target="_blank" href="%s">Testing Orders</a>" for more information.', 'woocommerce-gateway-fastspring'), 'http://docs.fastspring.com/activity-events-orders-and-subscriptions/test-orders');
 
@@ -49,10 +45,6 @@ class WC_Gateway_FastSpring extends WC_Payment_Gateway {
     add_action('woocommerce_update_options_payment_gateways_' . $this->id, array($this, 'process_admin_options'));
     add_action('woocommerce_receipt_' . $this->id, array($this, 'payment_page'));
     add_action('woocommerce_api_wc_gateway_fastspring_commerce', array($this, 'return_handler'));
-    //add_filter( 'woocommerce_payment_complete_order_status', array($this, 'filter_woocommerce_payment_complete_order_status'), 10, 1 );
-    // add_action('woocommerce_checkout_order_processed', array($this, 'action_order_processed'));
-    //  add_action('woocommerce_after_checkout_validation', array($this, 'action_prevent_submission'));
-
   }
 
   /**
@@ -60,7 +52,6 @@ class WC_Gateway_FastSpring extends WC_Payment_Gateway {
    *
    * @params $value
    */
-
   public function validate_access_key_field($key, $value) {
     if (!empty($value)) {
       return $value;
@@ -122,30 +113,6 @@ class WC_Gateway_FastSpring extends WC_Payment_Gateway {
     }
   }
 
- 
-
-  /**
-   * Hijack submission action
-   */
-
-  function action_prevent_submission($posted) {
-
-    if (isset($_POST['m_prevent_submit']) && wc_notice_count('error') == 0) {
-
-      wc_add_notice(__("custom_notice", 'm_example'), 'error');
-// change the data in $posted here
-
-    }
-
-  }
-
-  /**
-   * Mark complete after payment
-   */
-  public function filter_woocommerce_payment_complete_order_status($order_id) {
-    return 'completed';
-  }
-
   /**
    * Check if this gateway is enabled
    */
@@ -155,12 +122,10 @@ class WC_Gateway_FastSpring extends WC_Payment_Gateway {
       return false;
     }
 
-    if (!$this->option('access_key') || !$this->option('private_key') || !$this->option('storefront_path')) {
-      return false;
+    if ($this->option('access_key') && $this->option('private_key') && ($this->option('popup') && $this->option('storefront_path')) || (!$this->option('popup') && $this->option('hosted_storefront_path'))) {
+      return true;
     }
-
-    return true;
-
+    return false;
   }
 
   /**
@@ -171,7 +136,7 @@ class WC_Gateway_FastSpring extends WC_Payment_Gateway {
   }
 
   /**
-   * payment_scripts function.
+   * Payment_scripts function.
    *
    * Outputs scripts used for fastspring payment
    */
@@ -198,10 +163,6 @@ class WC_Gateway_FastSpring extends WC_Payment_Gateway {
       wp_enqueue_script('fastspring', WC_FASTSPRING_SCRIPT, '', false, true);
 
       wp_enqueue_script('woocommerce_fastspring', plugins_url('assets/js/fastspring-checkout' . $suffix . '.js', WC_FASTSPRING_MAIN_FILE), array('jquery', 'fastspring'), WC_FASTSPRING_VERSION, true);
-
-      // wp_dequeue_script('wc-checkout');
-      // // wp_enqueue_script('wc-checkout', 'wp-content/plugins/woocommerce/assets/js/frontend/checkout' . $suffix . '.js',
-      // //  array( 'jquery', 'woocommerce', 'wc-country-select', 'wc-address-i18n', 'fastspring-checkout' ), WC_VERSION, true);
 
     }
 
@@ -248,194 +209,6 @@ class WC_Gateway_FastSpring extends WC_Payment_Gateway {
    */
   public function log($message) {
     WC_FastSpring::log($message);
-  }
-
-  /**
-   * Calculates discounted item price based on overall discount share
-   *
-   * @return float
-   */
-  public function get_discount_item_amount($amount) {
-    $total = WC()->cart->subtotal;
-    $discount = WC()->cart->discount_cart;
-    return $amount > 0 ? $amount - $discount / ($total / $amount) : $amount;
-  }
-
-  /**
-   * Builds cart payload
-   *
-   * @return object
-   */
-  public function get_cart_items() {
-
-    $items = array();
-
-    foreach (WC()->cart->cart_contents as $cart_item_key => $values) {
-
-      $amount = $values['line_subtotal'] / $values['quantity'];
-
-      $product = $values['data'];
-
-      $item = array(
-        'product' => $product->get_slug(),
-        'quantity' => $values['quantity'],
-        'pricing' => [
-          'quantityBehavior' => 'lock',
-          'price' => [
-            'USD' => $this->get_discount_item_amount($amount),
-          ],
-        ],
-        // customer-visible product display name or title
-        'display' => [
-          'en' => $values['quantity'] . ' ' . $product->get_name(),
-        ],
-        'description' => [
-          'summary' => [
-            'en' => $product->get_short_description(),
-          ],
-          'full' => [
-            'en' => $product->get_short_description(),
-          ],
-        ],
-        'image' => $this->get_image($product->get_image_id()),
-        'removable' => false, // Boolean - controls whether or not product can be removed from the cart by the customer
-        'sku' => $product->get_sku(), // String - optional product SKU ID (e.g. to match your internal SKU or product ID)
-
-      );
-
-      $items[] = $item;
-    }
-
-    return $items;
-
-  }
-
-  /**
-   * Gets a product image URL
-   *
-   * @return string
-   */
-  public function get_image($id, $size = 'shop_thumbnail', $attr = array(), $placeholder = true) {
-
-    $data = wp_get_attachment_image_src($id, $size);
-
-    if ($data) {
-      $image = $data[0];
-    } elseif ($placeholder) {
-      $image = wc_placeholder_img($size);
-    } else {
-      $image = '';
-    }
-    return str_replace(array('https://', 'http://'), '//', $image);
-  }
-
-  /**
-   * Get cart info
-   *
-   * @return object
-   */
-  public function get_cart_customer_details() {
-
-    $order_id = absint(WC()->session->get('order_awaiting_payment'));
-
-    if (!$order_id) {
-      $this->log(sprintf('No  order found in session with ID %s', $order_id));
-      return [];
-    }
-
-    // Set another session var that wont get erased - we need that for receipt
-    // We sometimes get a race condition
-    WC()->session->set('current_order', $order_id);
-
-    $order = wc_get_order($order_id);
-
-    return [
-
-      'email' => $order->get_billing_email(),
-      'firstName' => $order->get_billing_first_name(),
-      'lastName' => $order->get_billing_last_name(),
-      'company' => $order->get_billing_company(),
-      'addressLine1' => $order->get_billing_address_1(),
-      'addressLine2' => $order->get_billing_address_2(),
-      'region' => $order->get_billing_state(),
-      'city' => $order->get_billing_city(),
-      'postalCode' => $order->get_billing_postcode(),
-      'country' => $order->get_billing_country(),
-      'phoneNumber' => $order->get_billing_phone(),
-    ];
-  }
-
-  /**
-   * Returns order ID as tag array for FS reference
-   *
-   * @return array
-   */
-  public function get_order_tags() {
-    return array("store_order_id" => absint(WC()->session->get('order_awaiting_payment')));
-  }
-
-  /**
-   * Builds JSON payload
-   *
-   * @return object
-   */
-  public function get_json_payload() {
-    return array(
-      'tags' => $this->get_order_tags(),
-      'contact' => $this->get_cart_customer_details(),
-      'items' => $this->get_cart_items(),
-    );
-  }
-
-  /**
-   * Builds encrypted JSON payload
-   *
-   * @return object
-   */
-  public function get_secure_json_payload() {
-
-    $aes_key = $this->aes_key_generate();
-    $payload = $this->encrypt_payload($aes_key, json_encode($this->get_json_payload()));
-    $key = $this->encrypt_key($aes_key);
-
-    return [
-      'payload' => $payload,
-      'key' => $key,
-
-    ];
-  }
-
-  /**
-   * Encrypts payload
-   *
-   * @param object
-   * @return string
-   */
-  public function encrypt_payload($aes_key, $string) {
-    $cipher = openssl_encrypt($string, "AES-128-ECB", $aes_key, OPENSSL_RAW_DATA);
-    return base64_encode($cipher);
-
-  }
-
-  /**
-   * Create secure key
-   *
-   * @param object
-   * @return string
-   */
-  public function encrypt_key($aes_key) {
-    $private_key = openssl_pkey_get_private($this->option('private_key'));
-    openssl_private_encrypt($aes_key, $aes_key_encrypted, $private_key);
-    return base64_encode($aes_key_encrypted);
-  }
-
-  /**
-   * Generate AES key
-   *
-   * @return string
-   */
-  public function aes_key_generate() {
-    return openssl_random_pseudo_bytes(16);
   }
 
   /**
