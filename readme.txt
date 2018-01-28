@@ -14,19 +14,18 @@ FastSpring For Woocommerce integrates your FastSpring account with your wordpres
 
 == Description ==
 
-FastSpring For Woocommerce integrates your [FastSpring[(http://fastspring.com) account with your wordpress site. It uses the popup version of FastSpring and provides webhook support for order validation.
+FastSpring For Woocommerce integrates your [FastSpring[(http://fastspring.com) account with your WordPress site. It provides support for both the hosted and popup version of FastSpring and provides webhook and API support for order validation.
 
 == Installation ==
 
-After activating the plugin you will need to login to your FastSpring account and generate a public and private key as well as create a webhook secret.  In the WooCommerce > Checkout > FastSpring dashboard, update the fields with your webhook secret and your public key. See [docs](http://docs.fastspring.com/integrating-with-fastspring/store-builder-library/passing-sensitive-data-with-secure-requests).
+After activating the plugin you will need to setup your access key and SSL certificate to encrypt orders to FastSpring. Additionally, you will need to setup either the Webhook or API method of validating orders depending on your storefront type.
 
-This plugin provides support only for the popup version of FastSpring. You will need to create your popup store in the FS dashboard and update your WP setting with the path of your popup store.
-
-Add your WP webhook url as found in the FS settings to the webhook section in the FS Integrations section.
+For popups you can use eiher the webhook or API method. FastSpring hosted storefronts, on the other hand, must use the webhook method. Instructions for each are found in the admin settings for this plugin under WooCommerce > Checkout > FastSpring dashboard, 
 
 == Screenshots ==
  
 1. FastSpring admin dashboard.
+2. FastSpring payment popup option.
 
 == Changelog ==
  
@@ -39,4 +38,8 @@ Add your WP webhook url as found in the FS settings to the webhook section in th
 = 1.0.4 =
 * Removed interim order confirm page - FS lauches right from checkout
 * Option to use hosted page or popup
+
+= 1.0.5 =
+* Option for hosted storefront.
+* Removed interim page - FS launches from checkout directly.
 

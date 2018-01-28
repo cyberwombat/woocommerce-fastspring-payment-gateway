@@ -1,14 +1,14 @@
 <?php
 /*
  * Plugin Name: WooCommerce FastSpring Gateway
- * Description: Take credit card payments on your store using FastSpring.
+ * Description: Accept credit card, PayPal, Amazon Pay and other payments on your store using FastSpring.
  * Author: Enradia
  * Author URI: https://enradia.com/
- * Version: 1.0.4
+ * Version: 1.0.5
  * Requires at least: 4.4
- * Tested up to: 4.8
+ * Tested up to: 4.9.2
  * WC requires at least: 3.0
- * WC tested up to: 3.2
+ * WC tested up to: 3.2.6
  * Text Domain: woocommerce-gateway-fastspring
  *
  */
