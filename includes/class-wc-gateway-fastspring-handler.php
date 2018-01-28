@@ -3,8 +3,6 @@ if (!defined('ABSPATH')) {
   exit;
 }
 
-include_once dirname(__FILE__) . '/class-wc-gateway-fastspring-builder.php';
-
 /**
  * Base class to handle ajax and webhook request from FastSpring.
  *
@@ -38,6 +36,35 @@ class WC_Gateway_FastSpring_Handler {
   }
 
   /**
+   * If API credentials provided we can check for order completion on popup close
+   */
+  public function get_order_status($id) {
+
+    if (empty($this->get_option('api_username')) || empty($this->get_option('api_password'))) {
+      $this->log('No API credentials - skipping API order confirm');
+      return 'pending';
+    }
+
+    $url = 'https://api.fastspring.com/orders/' . $id;
+
+    $context = stream_context_create(array(
+      'http' => array(
+        'user_agent' => 'Mozilla/5.0', // Not important what it is but must be set
+        'header' => "Authorization: Basic " . base64_encode($this->get_option('api_username') . ':' . $this->get_option('api_password')
+        ),
+      )));
+
+    $data = @json_decode(file_get_contents($url, false, $context));
+
+    if ($data && $data->completed === true) {
+      $this->log(sprintf('API order %s completion checked', $id));
+      return 'completed';
+    }
+    $this->log(sprintf('API order %s not found', $id));
+    return 'pending';
+  }
+
+  /**
    * AjAX call to mark order as complete (but pending payment) and return payment page
    */
   public function ajax_get_receipt() {
@@ -61,12 +88,21 @@ class WC_Gateway_FastSpring_Handler {
     // Popup closed with payment
     if ($order && $payload->reference) {
 
+      // Get API order status if available
+      $status = $this->get_order_status($payload->id);
+
       // Remove cart
       WC()->cart->empty_cart();
 
       $order->set_transaction_id($payload->reference);
-      // We could habe a race condition where FS already called webhook so lets not assume its pending
-      if ($order_status != 'completed') {
+
+      if ($status === 'completed' && $order->payment_complete($payload->reference)) {
+        $this->log(sprintf('Marking order ID %s as complete', $order->get_id()));
+        $order->add_order_note(sprintf(__('FastSpring payment approved (ID: %1$s)', 'woocommerce'), $order->get_id()));
+      }
+      // We could have a race condition where FS already called webhook so lets not assume its pending
+      elseif ($order_status != 'completed') {
+
         $order->update_status('pending', __('Order pending payment approval.', 'woocommerce'));
       }
 
@@ -76,43 +112,6 @@ class WC_Gateway_FastSpring_Handler {
     } else {
       wp_send_json_error('Order not found - Order ID was' . $order_id);
     }
-
-  }
-
-  /**
-   * AjAX call to checkout
-   */
-  public function ajax_checkout() {
-
-    $payload = json_decode(file_get_contents('php://input'));
-
-    $allowed = wp_verify_nonce($payload->security, 'wc-fastspring-receipt');
-
-    if (!$allowed) {
-      wp_send_json_error('Access denied');
-    }
-
-    wc_maybe_define_constant('WOOCOMMERCE_CHECKOUT', true);
-    WC()->checkout()->process_checkout();
-    wp_die(0);
-  }
-
-  /**
-   * AjAX call to fetch secure payload
-   */
-  public function ajax_get_payload() {
-
-    $payload = json_decode(file_get_contents('php://input'));
-
-    $allowed = wp_verify_nonce($payload->security, 'wc-fastspring-receipt');
-
-    if (!$allowed) {
-      wp_send_json_error('Access denied');
-    }
-
-    $p = WC_Gateway_FastSpring_Builder::get_secure_json_payload();
-
-    wp_send_json(($p));
 
   }
 
@@ -144,7 +143,7 @@ class WC_Gateway_FastSpring_Handler {
    */
   public function init() {
     add_action('wc_ajax_wc_fastspring_get_receipt', array($this, 'ajax_get_receipt'));
-    add_action('wc_ajax_wc_fastspring_get_payload', array($this, 'ajax_get_payload'));
+    //add_action('wc_ajax_wc_fastspring_get_payload', array($this, 'ajax_get_payload'));
 
     add_action('woocommerce_api_wc_gateway_fastspring', array($this, 'listen_webhook_request'));
     add_action('woocommerce_fastspring_handle_webhook_request', array($this, 'handle_webhook_request'));

@@ -54,12 +54,12 @@ class WC_Gateway_FastSpring_Builder {
         'pricing' => [
           'quantityBehavior' => 'lock',
           'price' => [
-            'USD' => self::get_discount_item_amount($amount),
+            get_woocommerce_currency() => self::get_discount_item_amount($amount),
           ],
         ],
         // customer-visible product display name or title
         'display' => [
-          'en' => $values['quantity'] . ' ' . $product->get_name(),
+          'en' => $product->get_name(),
         ],
         'description' => [
           'summary' => [
@@ -165,12 +165,20 @@ class WC_Gateway_FastSpring_Builder {
    */
   public function get_secure_json_payload() {
 
+    $debug = defined('SCRIPT_DEBUG') && SCRIPT_DEBUG;
+
+    //$debug = false;
     $aes_key = self::aes_key_generate();
-    $payload = self::encrypt_payload($aes_key, json_encode(self::get_json_payload()));
+    $payload = self::get_json_payload();
+    $encypted = self::encrypt_payload($aes_key, $payload);
     $key = self::encrypt_key($aes_key);
 
-    return [
+    return $debug ? [
       'payload' => $payload,
+      'key' => '',
+
+    ] : [
+      'payload' => $encypted,
       'key' => $key,
 
     ];
@@ -207,26 +215,6 @@ class WC_Gateway_FastSpring_Builder {
    */
   public function aes_key_generate() {
     return openssl_random_pseudo_bytes(16);
-  }
-
-  /**
-   * Payment page (actually the receipt)
-   *
-   * @param  int $order_id
-   */
-  public function payment_page($order_id) {
-    $order = wc_get_order($order_id);
-
-    $json = self::get_secure_json_payload();
-
-    echo '<script>
-        jQuery( function () {
-          var fscSession = ' . json_encode($json) . '
-          fastspring.builder.secure(fscSession.payload, fscSession.key)
-        });
-        </script>';
-
-    echo '<button class="button alt" data-fsc-action="Checkout">' . __('Enter payment info', 'woocommerce') . '</button> <a class="button cancel" href="' . esc_url($order->get_cancel_order_url()) . '">' . __('Cancel order &amp; restore cart', 'woocommerce') . '</a>';
   }
 
 }

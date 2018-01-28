@@ -106,14 +106,9 @@ if (!class_exists('WC_FastSpring')):
      * @return string storefront path
      */
     protected function get_storefront_path() {
-
-      $sf = $this->get_option('popup') 
-        ? $this->get_option('storefront_path') 
-        : $this->get_option('hosted_storefront_path');
-
       return $this->get_option('testmode')
-        ? str_replace('onfastspring.com', 'test.onfastspring.com', $sf)
-        : str_replace('test.onfastspring.com', 'onfastspring.com', $sf);
+      ? str_replace('onfastspring.com', 'test.onfastspring.com', $this->get_option('storefront_path'))
+      : str_replace('test.onfastspring.com', 'onfastspring.com', $this->get_option('storefront_path'));
     }
 
     /**
@@ -127,30 +122,31 @@ if (!class_exists('WC_FastSpring')):
 
       if ('fastspring' === $handle) {
 
-        return str_replace(' src', ' id="fsc-api"  data-storefront="' . $this->get_storefront_path() . '" data-access-key="' . $this->get_option('access_key') . '" data-popup-closed="fastspringPopupCloseHandler" data-debug="true" src', $tag);
+        $debug = defined('SCRIPT_DEBUG') && SCRIPT_DEBUG ? 'true' : 'false';
+        return str_replace(' src', ' id="fsc-api"  data-storefront="' . $this->get_storefront_path() . '" data-access-key="' . $this->get_option('access_key') . '" data-popup-closed="fastspringPopupCloseHandler" data-debug="' . $debug . '" src', $tag);
 
       }
       return $tag;
 
       // Possible FastSpring script tag values
       /*
-      id="fsc-api"
-      src="https://d1f8f9xcsvx3ha.cloudfront.net/sbl/0.7.3/fastspring-builder.min.js" type="text/javascript"
-        data-storefront="vendor.test.onfastspring.com"
-      data-data-callback="dataCallbackFunction"
-      data-error-callback="errorCallback"
-      data-before-requests-callback="beforeRequestsCallbackFunction"
-      data-after-requests-callback="afterRequestsCallbackFunction"
-      data-before-markup-callback="beforeMarkupCallbackFunction"
-      data-after-markup-callback="afterMarkupCallbackFunction"
-      data-decorate-callback="decorateURLFunction"
-      data-popup-event-received="popupEventReceived"
-      data-popup-webhook-received="popupWebhookReceived"
-      data-popup-closed="onPopupClose"
-      data-access-key=".. access key .."
-      data-debug="true"
-      data-continuous="true"
-      */
+        id="fsc-api"
+        src="https://d1f8f9xcsvx3ha.cloudfront.net/sbl/0.7.3/fastspring-builder.min.js" type="text/javascript"
+          data-storefront="vendor.test.onfastspring.com"
+        data-data-callback="dataCallbackFunction"
+        data-error-callback="errorCallback"
+        data-before-requests-callback="beforeRequestsCallbackFunction"
+        data-after-requests-callback="afterRequestsCallbackFunction"
+        data-before-markup-callback="beforeMarkupCallbackFunction"
+        data-after-markup-callback="afterMarkupCallbackFunction"
+        data-decorate-callback="decorateURLFunction"
+        data-popup-event-received="popupEventReceived"
+        data-popup-webhook-received="popupWebhookReceived"
+        data-popup-closed="onPopupClose"
+        data-access-key=".. access key .."
+        data-debug="true"
+        data-continuous="true"
+*/
 
     }
 
@@ -202,7 +198,7 @@ if (!class_exists('WC_FastSpring')):
      *
      * @param string current title
      * @param string endpoint triggered
-     * @return string 
+     * @return string
      */
     function title_order_pending($title, $endpoint) {
       return __("Enter Payment Info on Next Page", 'woocommerce-gateway-fastspring');

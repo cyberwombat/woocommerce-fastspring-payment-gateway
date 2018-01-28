@@ -3,6 +3,8 @@ if (!defined('ABSPATH')) {
   exit;
 }
 
+include_once dirname(__FILE__) . '/class-wc-gateway-fastspring-builder.php';
+
 /**
  * WC_Gateway_FastSpring class.
  *
@@ -17,11 +19,10 @@ class WC_Gateway_FastSpring extends WC_Payment_Gateway {
 
     $this->id = 'fastspring';
     $this->method_title = __('FastSpring', 'woocommerce-gateway-fastspring');
-    $this->method_description = __('The FastSpring payment plugin provides hosted checkout payment processing from FastSpring via a popup. ');
-    $this->has_fields = true;
-    $this->supports = array(
+    $this->method_description = __('This plugin provides checkout payment processing by <a href="https://fastspring.com" target="_blank">FastSpring</a> using their hosted or popup storefronts. ');
 
-    );
+    $this->has_fields = true;
+    $this->supports = array();
 
     // Load the form fields.
     $this->init_form_fields();
@@ -43,8 +44,10 @@ class WC_Gateway_FastSpring extends WC_Payment_Gateway {
     add_action('wc_ajax_wc_fastspring_order_complete', array($this, 'ajax_order_complete'));
     add_action('wp_enqueue_scripts', array($this, 'payment_scripts'));
     add_action('woocommerce_update_options_payment_gateways_' . $this->id, array($this, 'process_admin_options'));
-    add_action('woocommerce_receipt_' . $this->id, array($this, 'payment_page'));
     add_action('woocommerce_api_wc_gateway_fastspring_commerce', array($this, 'return_handler'));
+
+    $this->icon = apply_filters('woocommerce_gateway_icon', plugins_url('../assets/img/payment.png', __FILE__));
+
   }
 
   /**
@@ -87,27 +90,14 @@ class WC_Gateway_FastSpring extends WC_Payment_Gateway {
   }
 
   /**
-   * Validate hosted storefront path settings field
-   *
-   * @params $value
-   */
-  public function validate_hosted_storefront_path_field($key, $value) {
-    if (!isset($_POST['woocommerce_fastspring_popup']) && empty($value)) {
-      WC_Admin_Settings::add_error(esc_html__('Enter a valid hosted storefront path.', 'woocommerce-gateway-fastspring'));
-    } else if (!empty($value)) {
-      return preg_replace('#^https?://#', '', rtrim($value, '/'));
-    }
-  }
-
-  /**
-   * Validate popup storefront path settings field
+   * Validate storefront path settings field
    *
    * @params $value
    */
   public function validate_storefront_path_field($key, $value) {
 
-    if (isset($_POST['woocommerce_fastspring_popup']) && empty($value)) {
-      WC_Admin_Settings::add_error(esc_html__('Enter a valid popup storefront path.', 'woocommerce-gateway-fastspring'));
+    if (empty($value)) {
+      WC_Admin_Settings::add_error(esc_html__('Enter a valid storefront path.', 'woocommerce-gateway-fastspring'));
     } else if (!empty($value)) {
       return preg_replace('#^https?://#', '', rtrim($value, '/'));
     }
@@ -122,7 +112,7 @@ class WC_Gateway_FastSpring extends WC_Payment_Gateway {
       return false;
     }
 
-    if ($this->option('access_key') && $this->option('private_key') && ($this->option('popup') && $this->option('storefront_path')) || (!$this->option('popup') && $this->option('hosted_storefront_path'))) {
+    if ($this->option('access_key') && $this->option('private_key') && $this->option('storefront_path')) {
       return true;
     }
     return false;
@@ -184,11 +174,12 @@ class WC_Gateway_FastSpring extends WC_Payment_Gateway {
    * @return array|void
    */
   public function process_payment($order_id) {
+
     $order = wc_get_order($order_id);
 
     return array(
       'result' => 'success',
-      'redirect' => $order->get_checkout_payment_url(true),
+      'session' => WC_Gateway_FastSpring_Builder::get_secure_json_payload(),
     );
   }
 
@@ -221,30 +212,6 @@ class WC_Gateway_FastSpring extends WC_Payment_Gateway {
       echo wpautop(wptexturize(trim($description)));
     }
 
-  }
-
-  /**
-   * Payment page (actually the receipt)
-   *
-   * @param  int $order_id
-   */
-  public function payment_page($order_id) {
-    $order = wc_get_order($order_id);
-
-    if ($this->option('title')) {
-      echo '<p>' . sprintf(__('Thank you for your order, please click the button below to pay using %s.', 'woocommerce'), $this->option('title')) . '</p>';
-    }
-
-    $json = $this->get_secure_json_payload();
-
-    echo '<script>
-        jQuery( function () {
-          var fscSession = ' . json_encode($json) . '
-          fastspring.builder.secure(fscSession.payload, fscSession.key)
-        });
-        </script>';
-
-    echo '<button class="button alt" data-fsc-action="Checkout">' . __('Enter payment info', 'woocommerce') . '</button> <a class="button cancel" href="' . esc_url($order->get_cancel_order_url()) . '">' . __('Cancel order &amp; restore cart', 'woocommerce') . '</a>';
   }
 
 }

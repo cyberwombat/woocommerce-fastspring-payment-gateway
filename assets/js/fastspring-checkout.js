@@ -1,11 +1,13 @@
 /* globals jQuery, woocommerce_fastspring_params, fastspring, wc_checkout_params */
 var checkoutForm = jQuery('form.checkout')
+
 // Get AJAX Url
 function getAjaxURL (endpoint) {
   return woocommerce_fastspring_params.ajax_url.toString().replace('%%endpoint%%', 'wc_fastspring_' + endpoint)
 }
 // FS Popup close handler - redirect to receipt page if valid
 function fastspringPopupCloseHandler (data) { // eslint-disable-line no-unused-vars
+  checkoutForm.removeClass('processing')
   // data.id is the FS order ID - only returned on payment instead of just closing modal
   if (data && data.reference) {
     requestPaymentCompletionUrl(data || {}, function (err, res) {
@@ -15,9 +17,11 @@ function fastspringPopupCloseHandler (data) { // eslint-disable-line no-unused-v
     })
   }
 }
-// AJAX call to mark order as complete and get oder payment page for redirect
+
+// AJAX call to get odrer payment page for receipt and potentially mark order as complete usign FS API
 function requestPaymentCompletionUrl (data, cb) { // eslint-disable-line no-unused-vars
   data.security = woocommerce_fastspring_params.nonce.receipt
+
   jQuery.ajax({
     type: 'POST',
     dataType: 'json',
@@ -31,37 +35,8 @@ function requestPaymentCompletionUrl (data, cb) { // eslint-disable-line no-unus
     }
   })
 }
-// AJAX call to fetch secure payload
-function requestPayload (cb) { // eslint-disable-line no-unused-vars
-  var data = {
-    security: woocommerce_fastspring_params.nonce.receipt
-  }
-  jQuery.ajax({
-    type: 'POST',
-    dataType: 'json',
-    data: JSON.stringify(data),
-    url: getAjaxURL('get_payload'),
-    success: function (response) {
-      cb(null, response)
-    },
-    error: function (xhr, err, e) {
-      cb(xhr.responseText)
-    }
-  })
-}
-
+// Checkout form handler - create order and launch FS
 function doSubmit () {
-  checkoutForm.addClass('processing')
-  var formData = checkoutForm.data()
-  if (formData['blockUI.isBlocked'] !== 1) {
-    // checkoutForm.block({
-    //   message: null,
-    //   overlayCSS: {
-    //     background: '#000',
-    //     opacity: 0.6
-    //   }
-    // })
-  }
   jQuery.ajax({
     type: 'POST',
     url: wc_checkout_params.checkout_url,
@@ -70,14 +45,9 @@ function doSubmit () {
     success: function (result) {
       try {
         if (result.result === 'success') {
-          requestPayload(function (err, session) {
-            if (!err) {
-              fastspring.builder.secure(session.payload, session.key)
-              fastspring.builder.checkout()
-            } else {
-              return submitError('<div class="woocommerce-error">' + wc_checkout_params.i18n_checkout_error + '</div>')
-            }
-          })
+          // Launch FS
+          fastspring.builder.secure(result.session.payload, result.session.key)
+          fastspring.builder.checkout()
         } else if (result.result === 'failure') {
           throw new Error('Result failure')
         } else {
@@ -107,6 +77,8 @@ function doSubmit () {
   })
 }
 
+
+// Error handler
 function submitError (errorMessage) {
   jQuery('.woocommerce-NoticeGroup-checkout, .woocommerce-error, .woocommerce-message').remove()
   checkoutForm.prepend('<div class="woocommerce-NoticeGroup woocommerce-NoticeGroup-checkout">' + errorMessage + '</div>')
@@ -117,6 +89,8 @@ function submitError (errorMessage) {
   }, 1000)
   jQuery(document.body).trigger('checkout_error')
 }
+
+// Attach submit event
 checkoutForm.on('checkout_place_order', function () {
   doSubmit()
   return false
