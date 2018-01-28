@@ -167,10 +167,9 @@ class WC_Gateway_FastSpring_Builder {
 
     $debug = defined('SCRIPT_DEBUG') && SCRIPT_DEBUG;
 
-    //$debug = false;
     $aes_key = self::aes_key_generate();
     $payload = self::get_json_payload();
-    $encypted = self::encrypt_payload($aes_key, $payload);
+    $encypted = self::encrypt_payload($aes_key,json_encode($payload));
     $key = self::encrypt_key($aes_key);
 
     return $debug ? [
