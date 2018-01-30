@@ -1,5 +1,5 @@
 /* globals jQuery, woocommerce_fastspring_params, fastspring, wc_checkout_params */
-// (function ($) {
+
   var checkoutForm = jQuery('form.checkout')
 
   function getSpinnerPath (el) {
@@ -23,7 +23,7 @@
       overlay.style.position = 'fixed'
       overlay.style.top = '0'
       overlay.style.left = '0'
-      overlay.style.zIndex = '100000000000000'
+      overlay.style.zIndex = '-1'
       overlay.style.transitionProperty = 'opacity'
       overlay.style.transitionDuration = '0.5s'
       overlay.style.opacity = '0'
@@ -41,19 +41,30 @@
       overlay.appendChild(spinner)
 
       document.body.appendChild(overlay)
+    }
+  }
+
+  function setLoadingDone () {
+    checkoutForm.removeClass('processing')
+    var overlay = document.getElementById('fscLoader')
+    if (overlay) {
+      overlay.style.zIndex = '-1'
+      overlay.style.display = 'hidden'
+      // o.remove()
+    }
+  }
+
+  function setLoadingOn () {
+    checkoutForm.addClass('processing')
+    var overlay = document.getElementById('fscLoader')
+
+    if (overlay) {
+      overlay.style.zIndex = '100000000000000'
 
       setTimeout(function () {
         overlay.style.opacity = '1'
       }, 100)
     }
-  }
-
-  function setLoadingDone () {
-    var o = document.getElementById('fscLoader')
-    if (o) {
-      o.remove()
-    }
-    checkoutForm.removeClass('processing')
   }
 
   // Get AJAX Url
@@ -96,6 +107,8 @@
   function launchFS (session) {
     fastspring.builder.secure(session.payload, session.key)
     fastspring.builder.checkout()
+
+    disableFSOverlay()
   }
 
   // Create order and return payload for FS
@@ -139,14 +152,17 @@
   }
   // Checkout form handler - create order and launch FS
   function doSubmit () {
-    checkoutForm.addClass('processing')
-    setLoading()
+    setLoadingOn()
     setOrder(function (err, result) {
       if (!err) {
-        launchFS(result.session)
-        document.getElementById('fscCanvas').remove()
+         launchFS(result.session)
       }
     })
+  }
+
+  function disableFSOverlay () {
+    var o = document.getElementById('fscCanvas')
+    if (o) o.style.display = 'none'
   }
 
   // Error handler
@@ -166,4 +182,6 @@
     doSubmit()
     return false
   })
-// })(jQuery)
+
+  // Preload this in back - it makes spinner show better
+  setLoading()
