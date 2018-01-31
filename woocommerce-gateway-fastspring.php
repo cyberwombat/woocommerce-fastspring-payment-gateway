@@ -21,7 +21,7 @@ if (!defined('ABSPATH')) {
  * Required minimums and constants
  */
 define('WC_FASTSPRING_SCRIPT', 'https://d1f8f9xcsvx3ha.cloudfront.net/sbl/0.7.4/fastspring-builder.min.js');
-define('WC_FASTSPRING_VERSION', '1.0.0');
+define('WC_FASTSPRING_VERSION', '1.0.5');
 define('WC_FASTSPRING_MIN_PHP_VER', '5.6.0');
 define('WC_FASTSPRING_MIN_WC_VER', '3.0.0');
 define('WC_FASTSPRING_MAIN_FILE', __FILE__);

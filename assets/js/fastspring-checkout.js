@@ -49,8 +49,7 @@
     var overlay = document.getElementById('fscLoader')
     if (overlay) {
       overlay.style.zIndex = '-1'
-      overlay.style.display = 'hidden'
-      // o.remove()
+      overlay.style.display = 'none'
     }
   }
 
@@ -167,6 +166,7 @@
 
   // Error handler
   function submitError (errorMessage) {
+     setLoadingDone()
     jQuery('.woocommerce-NoticeGroup-checkout, .woocommerce-error, .woocommerce-message').remove()
     checkoutForm.prepend('<div class="woocommerce-NoticeGroup woocommerce-NoticeGroup-checkout">' + errorMessage + '</div>')
     checkoutForm.removeClass('processing')
