@@ -42,9 +42,11 @@ class WC_Gateway_FastSpring_Builder {
 
     $items = array();
 
+    $has_subscription = class_exists('WC_Subscriptions_Product');
+
     foreach (WC()->cart->cart_contents as $cart_item_key => $values) {
 
-      $amount = $values['line_subtotal'] / $values['quantity'];
+      $price = $values['line_subtotal'];
 
       $product = $values['data'];
 
@@ -53,11 +55,9 @@ class WC_Gateway_FastSpring_Builder {
         'quantity' => $values['quantity'],
         'pricing' => [
           'quantityBehavior' => 'lock',
-          'price' => [
-            get_woocommerce_currency() => self::get_discount_item_amount($amount),
-          ],
+
         ],
-        // customer-visible product display name or title
+        // Customer visible product display name or title
         'display' => [
           'en' => $product->get_name(),
         ],
@@ -70,12 +70,98 @@ class WC_Gateway_FastSpring_Builder {
           ],
         ],
         'image' => self::get_image($product->get_image_id()),
-        'removable' => false, // Boolean - controls whether or not product can be removed from the cart by the customer
-        'sku' => $product->get_sku(), // String - optional product SKU ID (e.g. to match your internal SKU or product ID)
+        // Boolean - controls whether or not product can be removed from the cart by the customer
+        'removable' => false,
+        // String - optional product SKU ID (e.g. to match your internal SKU or product ID)
+        'sku' => $product->get_sku(),
 
       );
 
+      // Sbscriptions?
+      if ($has_subscription) {
+
+        // If sub then the price we send FS needs to be subscription price not including fee
+        $price = WC_Subscriptions_Product::get_price($product->get_id());
+
+        // The signup fee - we need special handling for this later
+        $fee = WC_Subscriptions_Product::get_sign_up_fee($product->get_id());
+
+        // Subsciption details such as period, length, etc
+        $trial_end_date = WC_Subscriptions_Product::get_trial_expiration_date($product->get_id());
+        $trial = $trial_end_date != 0 ? $trial_end_date['d'] : 0;
+        $period = WC_Subscriptions_Product::get_period($product->get_id());
+        $interval = WC_Subscriptions_Product::get_interval($product->get_id());
+        $count = WC_Subscriptions_Product::get_length($product->get_id());
+
+        // Integer - number of free trial days for a subscription (required for subscription only)
+        $item['pricing']['trial'] = $trial;
+
+        //  'adhoc', 'day', 'week', 'month', or 'year',  - interval unit for scheduled billings; 'adhoc' = managed / ad hoc subscription (required for subscription only)
+        $item['pricing']['interval'] = $period;
+
+        // Integer - number of interval units per billing (e.g. if interval = 'MONTH', and intervalLength = 1, billings will occur once per month)(required for subscription only)
+        $item['pricing']['intervalLength'] = $interval;
+
+        // Integer - otal number of billings; pass null for unlimited / until cancellation subscription (required for subscription only)
+        $item['pricing']['intervalCount'] = $count > 0 ? $count : null;
+
+        // Boolean - controls whether or not payment reminder email messages are enabled for the product (subscription only)
+        // $item['pricing']['reminder_enabled'] = false;
+
+        // 'adhoc', 'day', 'week', 'month', or 'year' - interval unit for payment reminder email messages (subscription only)
+        // $item['pricing']['reminder_value'] = 'adhoc';
+
+        // Integer - number of interval units prior to the next billing date when payment reminder email messages will be sent (subscription only)
+        // $item['pricing']['reminder_count'] = 0;
+
+        // Boolean - controls whether or not payment overdue notification email messages are enabled for the product (subscription only)
+        // $item['pricing']['payment_overdue'] = false;
+
+        // 'adhoc', 'day', 'week', 'month', or 'year' - interval unit for payment overdue notification email messages (subscription only)
+        // $item['pricing']['overdue_interval_value'] = 'adhoc';
+
+        // Integer - total number of payment overdue notification messages to send (subscription only)
+        // $item['pricing']['overdue_interval_count'] = 0;
+
+        // Integer - number of overdue_interval units between each payment overdue notification message (subscription only)
+        // $item['pricing']['overdue_interval_amount'] = 0;
+
+        // Integer - number of cancellation_interval units prior to subscription cancellation (subscription only)
+        // $item['pricing']['cancellation_interval_count'] = 0;
+
+        // 'adhoc', 'day', 'week', 'month', or 'year' - interval unit for subscription cancellation (subscription only)
+        // $item['pricing']['cancellation_interval_value'] = 'adhoc';
+      }
+
+      // Set our determined price
+      $item['pricing']['price'] = [
+        get_woocommerce_currency() => self::get_discount_item_amount($price / $values['quantity']),
+      ];
+
       $items[] = $item;
+
+      // FS cannot handle signup fees when there is a trial. We create a separate item just for that
+      if ($fee > 0) {
+        $items[] = array(
+          'product' => $product->get_slug() . '-signup-fee',
+          'quantity' => $values['quantity'],
+          'pricing' => [
+            'quantityBehavior' => 'lock',
+            'price' => [
+              get_woocommerce_currency() => $fee,
+            ],
+          ],
+          'display' => [
+            'en' => $product->get_name() . ' signup fee',
+          ],
+          'description' => [
+            'summary' => [
+              'en' => 'Subscription signup fee',
+            ],
+          ],
+          'removable' => false
+        );
+      }
     }
 
     return $items;
@@ -169,7 +255,7 @@ class WC_Gateway_FastSpring_Builder {
 
     $aes_key = self::aes_key_generate();
     $payload = self::get_json_payload();
-    $encypted = self::encrypt_payload($aes_key,json_encode($payload));
+    $encypted = self::encrypt_payload($aes_key, json_encode($payload));
     $key = self::encrypt_key($aes_key);
 
     return $debug ? [

@@ -22,6 +22,8 @@ After activating the plugin you will need to setup your access key and SSL certi
 
 For popups you can use eiher the webhook or API method. FastSpring hosted storefronts, on the other hand, must use the webhook method. Instructions for each are found in the admin settings for this plugin under WooCommerce > Checkout > FastSpring dashboard, 
 
+FastSpring sends its own receipts and other user notifiations. You may want to disable this if you are using the existing WooCommerce notification system to prevent duplicate receipts.
+
 == Screenshots ==
  
 1. FastSpring admin dashboard.

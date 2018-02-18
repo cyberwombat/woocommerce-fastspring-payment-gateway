@@ -22,7 +22,25 @@ class WC_Gateway_FastSpring extends WC_Payment_Gateway {
     $this->method_description = __('This plugin provides checkout payment processing by <a href="https://fastspring.com" target="_blank">FastSpring</a> using their hosted or popup storefronts. ');
 
     $this->has_fields = true;
-    $this->supports = array();
+    $this->supports  = array(
+      'products',
+      'refunds',
+      // 'tokenization',
+      // 'add_payment_method',
+      'subscriptions',
+      'subscription_cancellation',
+      'subscription_suspension',
+      // 'subscription_reactivation',
+      // 'subscription_amount_changes',
+      // 'subscription_date_changes',
+      // 'subscription_payment_method_change',
+      // 'subscription_payment_method_change_customer',
+      // 'subscription_payment_method_change_admin',
+      'multiple_subscriptions',
+      //'pre-orders',
+    );
+
+
 
     // Load the form fields.
     $this->init_form_fields();

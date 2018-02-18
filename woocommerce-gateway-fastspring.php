@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Plugin Name: WooCommerce FastSpring Gateway
  * Description: Accept credit card, PayPal, Amazon Pay and other payments on your store using FastSpring.
@@ -8,7 +9,7 @@
  * Requires at least: 4.4
  * Tested up to: 4.9.2
  * WC requires at least: 3.0
- * WC tested up to: 3.2.6
+ * WC tested up to: 3.3.1
  * Text Domain: woocommerce-gateway-fastspring
  *
  */
@@ -123,7 +124,7 @@ if (!class_exists('WC_FastSpring')):
       if ('fastspring' === $handle) {
 
         $debug = defined('SCRIPT_DEBUG') && SCRIPT_DEBUG ? 'true' : 'false';
-        return str_replace(' src', ' id="fsc-api"  data-storefront="' . $this->get_storefront_path() . '" data-access-key="' . $this->get_option('access_key') . '" data-popup-closed="fastspringPopupCloseHandler" data-debug="' . $debug . '" src', $tag);
+        return str_replace(' src', ' id="fsc-api"  data-storefront="' . $this->get_storefront_path() . '" data-before-requests-callback="fastspringBeforeRequestHandler" data-access-key="' . $this->get_option('access_key') . '" data-popup-closed="fastspringPopupCloseHandler" data-debug="' . $debug . '" src', $tag);
 
       }
       return $tag;
