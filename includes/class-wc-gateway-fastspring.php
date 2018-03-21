@@ -59,9 +59,9 @@ class WC_Gateway_FastSpring extends WC_Payment_Gateway {
     }
 
     // Hooks.
-    add_action('wc_ajax_wc_fastspring_order_complete', array($this, 'ajax_order_complete'));
-    add_action('wp_enqueue_scripts', array($this, 'payment_scripts'));
-    add_action('woocommerce_update_options_payment_gateways_' . $this->id, array($this, 'process_admin_options'));
+   add_action('wc_ajax_wc_fastspring_order_complete', array($this, 'ajax_order_complete'));
+   add_action('wp_enqueue_scripts', array($this, 'payment_scripts'));
+   add_action('woocommerce_update_options_payment_gateways_' . $this->id, array($this, 'process_admin_options'));
     add_action('woocommerce_api_wc_gateway_fastspring_commerce', array($this, 'return_handler'));
 
     $this->icon = apply_filters('woocommerce_gateway_icon', plugins_url('../assets/img/payment.png', __FILE__));

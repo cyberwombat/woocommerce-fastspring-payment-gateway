@@ -52,7 +52,7 @@ function requestPaymentCompletionUrl (data, cb) { // eslint-disable-line no-unus
   })
 }
 // Launch FS (popup or redirect)
-function launchFS (session) {
+function launchFastSpring (session) {
   fastspring.builder.secure(session.payload, session.key)
   fastspring.builder.checkout()
 }
@@ -100,7 +100,7 @@ function doSubmit () {
   setLoadingOn()
   setOrder(function (err, result) {
     if (!err) {
-      launchFS(result.session)
+      launchFastSpring(result.session)
     }
   })
 }
@@ -116,8 +116,14 @@ function submitError (errorMessage) {
   }, 1000)
   jQuery(document.body).trigger('checkout_error')
 }
-// Attach submit event
+// Check if FS is selected
+function isFastSpringSelected () {
+  return jQuery('.woocommerce-checkout input[name="payment_method"]:checked').attr('id') === 'payment_method_fastspring'
+}
+// Attach submit event if FS is selected
 checkoutForm.on('checkout_place_order', function () {
-  doSubmit()
-  return false
+  if (isFastSpringSelected()) {
+    doSubmit()
+    return false
+  }
 })
