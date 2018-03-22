@@ -42,7 +42,8 @@ class WC_Gateway_FastSpring_Builder {
 
     $items = array();
 
-    $has_subscription = class_exists('WC_Subscriptions_Product');
+    // Disable for now
+    $has_subscription = false; //class_exists('WC_Subscriptions_Product');
 
     foreach (WC()->cart->cart_contents as $cart_item_key => $values) {
 
