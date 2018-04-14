@@ -215,11 +215,28 @@ class WC_Gateway_FastSpring_Handler {
         $this->handle_webhook_request_order_refunded($payload);
         break;
 
+      case 'subscription.canceled':
+        $this->handle_webhook_request_subscription_canceled($payload);
+        break;
+
+      case 'subscription.deactivated':
+        $this->handle_webhook_request_subscription_deactivate($payload);
+        break;
+        
+      case 'subscription.activated':
+        $this->handle_webhook_request_subscription_acivate($payload);
+        break;
+
+      case 'subscription.updated':
+      //$this->handle_webhook_request_subscription_canceled($payload);
+      //break;
+
       default:
         $this->log(sprintf('No webhook handler found for %s', $payload->type));
         break;
       }
 
+      $this->log(json_encode($payload));
       return wp_send_json_success();
     } catch (Exception $e) {
       return wp_send_json_error($e->getMessage());
@@ -252,6 +269,39 @@ class WC_Gateway_FastSpring_Handler {
     $order = $this->find_order_by_fastspring_tag($payload);
     $this->log(sprintf('Marking order ID %s as refunded', $order->get_id()));
     $order->update_status('refunded');
+  }
+
+  /**
+   * Handles subscription cancellation
+   *
+   * @param array $payload Webhook data
+   */
+  public function handle_webhook_request_subscription_canceled($payload) {
+    $order = $this->find_order_by_fastspring_tag($payload);
+    $this->log(sprintf('Marking subscription order ID %s as canceled', $order->get_id()));
+    $order->update_status('cancelled');
+  }
+
+  /**
+   * Handles subscription (re)activation
+   *
+   * @param array $payload Webhook data
+   */
+  public function handle_webhook_request_subscription_activate($payload) {
+    $order = $this->find_order_by_fastspring_tag($payload);
+    $this->log(sprintf('Marking subscription order ID %s as (re)activated', $order->get_id()));
+    $order->update_status('active');
+  }
+
+  /**
+   * Handles subscription deactivation
+   *
+   * @param array $payload Webhook data
+   */
+  public function handle_webhook_request_subscription_deactivate($payload) {
+    $order = $this->find_order_by_fastspring_tag($payload);
+    $this->log(sprintf('Marking subscription order ID %s as deactivated', $order->get_id()));
+    $order->update_status('on-hold');
   }
 
   /**

@@ -22,17 +22,17 @@ class WC_Gateway_FastSpring extends WC_Payment_Gateway {
     $this->method_description = __('This plugin provides checkout payment processing by <a href="https://fastspring.com" target="_blank">FastSpring</a> using their hosted or popup storefronts. ');
 
     $this->has_fields = true;
-    $this->supports  = array(
+    $this->supports = array(
       'products',
       'refunds',
       // 'tokenization',
       // 'add_payment_method',
-      'subscriptions',
-      'subscription_cancellation',
-      'subscription_suspension',
-      // 'subscription_reactivation',
-      // 'subscription_amount_changes',
-      // 'subscription_date_changes',
+      'subscriptions', // subscription.activated
+      'subscription_cancellation', // FS subscription.canceled
+      'subscription_suspension', // FS subscription.deactivated,
+      'subscription_reactivation', // FS  subscription.activated
+      'subscription_amount_changes', // FS subscription.updated
+      'subscription_date_changes', // FS subscription.updated
       // 'subscription_payment_method_change',
       // 'subscription_payment_method_change_customer',
       // 'subscription_payment_method_change_admin',
@@ -40,7 +40,12 @@ class WC_Gateway_FastSpring extends WC_Payment_Gateway {
       //'pre-orders',
     );
 
-
+    // FS not implemented for subscriptions:
+    // subscription.trial.reminder
+    // subscription.payment.reminder
+    // subscription.payment.overdue
+    // subscription.charge.completed
+    // subscription.charge.failed
 
     // Load the form fields.
     $this->init_form_fields();
@@ -59,9 +64,9 @@ class WC_Gateway_FastSpring extends WC_Payment_Gateway {
     }
 
     // Hooks.
-   add_action('wc_ajax_wc_fastspring_order_complete', array($this, 'ajax_order_complete'));
-   add_action('wp_enqueue_scripts', array($this, 'payment_scripts'));
-   add_action('woocommerce_update_options_payment_gateways_' . $this->id, array($this, 'process_admin_options'));
+    add_action('wc_ajax_wc_fastspring_order_complete', array($this, 'ajax_order_complete'));
+    add_action('wp_enqueue_scripts', array($this, 'payment_scripts'));
+    add_action('woocommerce_update_options_payment_gateways_' . $this->id, array($this, 'process_admin_options'));
     add_action('woocommerce_api_wc_gateway_fastspring_commerce', array($this, 'return_handler'));
 
     $this->icon = apply_filters('woocommerce_gateway_icon', plugins_url('../assets/img/payment.png', __FILE__));
@@ -88,9 +93,10 @@ class WC_Gateway_FastSpring extends WC_Payment_Gateway {
    */
   public function validate_private_key_field($key, $value) {
 
-    if (strpos($value, '-----BEGIN RSA PRIVATE KEY-----') !== false) {
+    if (@openssl_private_encrypt('abc', $aes_key_encrypted, openssl_pkey_get_private($value))) {
       return $value;
     }
+
     WC_Admin_Settings::add_error(esc_html__('The RSA private key field is invalid.', 'woocommerce-gateway-fastspring'));
 
   }

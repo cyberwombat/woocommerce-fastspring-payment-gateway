@@ -42,8 +42,7 @@ class WC_Gateway_FastSpring_Builder {
 
     $items = array();
 
-    // Disable for now
-    $has_subscription = false; //class_exists('WC_Subscriptions_Product');
+    $has_subscription = class_exists('WC_Subscriptions_Product');
 
     foreach (WC()->cart->cart_contents as $cart_item_key => $values) {
 
@@ -78,7 +77,9 @@ class WC_Gateway_FastSpring_Builder {
 
       );
 
-      // Sbscriptions?
+      $fee = 0;
+      
+      // Subscriptions?
       if ($has_subscription) {
 
         // If sub then the price we send FS needs to be subscription price not including fee
