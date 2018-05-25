@@ -42,7 +42,7 @@ class WC_Gateway_FastSpring_Builder {
 
     $items = array();
 
-    $has_subscription = class_exists('WC_Subscriptions_Product');
+    $has_subscription_support = class_exists('WC_Subscriptions_Product');
 
     foreach (WC()->cart->cart_contents as $cart_item_key => $values) {
 
@@ -80,7 +80,7 @@ class WC_Gateway_FastSpring_Builder {
       $fee = 0;
       
       // Subscriptions?
-      if ($has_subscription) {
+      if ($has_subscription_support) {
 
         // If sub then the price we send FS needs to be subscription price not including fee
         $price = WC_Subscriptions_Product::get_price($product->get_id());
@@ -95,44 +95,50 @@ class WC_Gateway_FastSpring_Builder {
         $interval = WC_Subscriptions_Product::get_interval($product->get_id());
         $count = WC_Subscriptions_Product::get_length($product->get_id());
 
-        // Integer - number of free trial days for a subscription (required for subscription only)
-        $item['pricing']['trial'] = $trial;
+        // When period is not set this item is not a sub product
+        $is_subscription = !empty($period);
 
-        //  'adhoc', 'day', 'week', 'month', or 'year',  - interval unit for scheduled billings; 'adhoc' = managed / ad hoc subscription (required for subscription only)
-        $item['pricing']['interval'] = $period;
+        if($is_subscription) {
 
-        // Integer - number of interval units per billing (e.g. if interval = 'MONTH', and intervalLength = 1, billings will occur once per month)(required for subscription only)
-        $item['pricing']['intervalLength'] = $interval;
+          // Integer - number of free trial days for a subscription (required for subscription only)
+          $item['pricing']['trial'] = $trial;
 
-        // Integer - otal number of billings; pass null for unlimited / until cancellation subscription (required for subscription only)
-        $item['pricing']['intervalCount'] = $count > 0 ? $count : null;
+          //  'adhoc', 'day', 'week', 'month', or 'year',  - interval unit for scheduled billings; 'adhoc' = managed / ad hoc subscription (required for subscription only)
+          $item['pricing']['interval'] = $period;
 
-        // Boolean - controls whether or not payment reminder email messages are enabled for the product (subscription only)
-        // $item['pricing']['reminder_enabled'] = false;
+          // Integer - number of interval units per billing (e.g. if interval = 'MONTH', and intervalLength = 1, billings will occur once per month)(required for subscription only)
+          $item['pricing']['intervalLength'] = $interval;
 
-        // 'adhoc', 'day', 'week', 'month', or 'year' - interval unit for payment reminder email messages (subscription only)
-        // $item['pricing']['reminder_value'] = 'adhoc';
+          // Integer - otal number of billings; pass null for unlimited / until cancellation subscription (required for subscription only)
+          $item['pricing']['intervalCount'] = $count > 0 ? $count : null;
 
-        // Integer - number of interval units prior to the next billing date when payment reminder email messages will be sent (subscription only)
-        // $item['pricing']['reminder_count'] = 0;
+          // Boolean - controls whether or not payment reminder email messages are enabled for the product (subscription only)
+          // $item['pricing']['reminder_enabled'] = false;
 
-        // Boolean - controls whether or not payment overdue notification email messages are enabled for the product (subscription only)
-        // $item['pricing']['payment_overdue'] = false;
+          // 'adhoc', 'day', 'week', 'month', or 'year' - interval unit for payment reminder email messages (subscription only)
+          // $item['pricing']['reminder_value'] = 'adhoc';
 
-        // 'adhoc', 'day', 'week', 'month', or 'year' - interval unit for payment overdue notification email messages (subscription only)
-        // $item['pricing']['overdue_interval_value'] = 'adhoc';
+          // Integer - number of interval units prior to the next billing date when payment reminder email messages will be sent (subscription only)
+          // $item['pricing']['reminder_count'] = 0;
 
-        // Integer - total number of payment overdue notification messages to send (subscription only)
-        // $item['pricing']['overdue_interval_count'] = 0;
+          // Boolean - controls whether or not payment overdue notification email messages are enabled for the product (subscription only)
+          // $item['pricing']['payment_overdue'] = false;
 
-        // Integer - number of overdue_interval units between each payment overdue notification message (subscription only)
-        // $item['pricing']['overdue_interval_amount'] = 0;
+          // 'adhoc', 'day', 'week', 'month', or 'year' - interval unit for payment overdue notification email messages (subscription only)
+          // $item['pricing']['overdue_interval_value'] = 'adhoc';
 
-        // Integer - number of cancellation_interval units prior to subscription cancellation (subscription only)
-        // $item['pricing']['cancellation_interval_count'] = 0;
+          // Integer - total number of payment overdue notification messages to send (subscription only)
+          // $item['pricing']['overdue_interval_count'] = 0;
 
-        // 'adhoc', 'day', 'week', 'month', or 'year' - interval unit for subscription cancellation (subscription only)
-        // $item['pricing']['cancellation_interval_value'] = 'adhoc';
+          // Integer - number of overdue_interval units between each payment overdue notification message (subscription only)
+          // $item['pricing']['overdue_interval_amount'] = 0;
+
+          // Integer - number of cancellation_interval units prior to subscription cancellation (subscription only)
+          // $item['pricing']['cancellation_interval_count'] = 0;
+
+          // 'adhoc', 'day', 'week', 'month', or 'year' - interval unit for subscription cancellation (subscription only)
+          // $item['pricing']['cancellation_interval_value'] = 'adhoc';
+        }
       }
 
       // Set our determined price

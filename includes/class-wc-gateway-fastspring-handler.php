@@ -116,7 +116,6 @@ class WC_Gateway_FastSpring_Handler {
       }
       // We could have a race condition where FS already called webhook so lets not assume its pending
       elseif ($order_status != 'completed') {
-
         $order->update_status('pending', __('Order pending payment approval.', 'woocommerce'));
       }
 
@@ -266,7 +265,8 @@ class WC_Gateway_FastSpring_Handler {
 
     $order = $this->find_order_by_fastspring_tag($payload);
 
-    if ($order->payment_complete($payload->reference)) {
+    // Only mark complete if not already - webhook can hit multiple times
+    if ($order->get_status() !== 'completed' && $order->payment_complete($payload->reference)) {
       $this->log(sprintf('Marking order ID %s as complete', $order->get_id()));
       $order->add_order_note(sprintf(__('FastSpring payment approved (ID: %1$s)', 'woocommerce'), $order->get_id()));
     } else {
