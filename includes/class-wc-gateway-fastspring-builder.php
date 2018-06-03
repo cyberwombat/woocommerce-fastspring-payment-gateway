@@ -27,10 +27,11 @@ class WC_Gateway_FastSpring_Builder {
    *
    * @return float
    */
-  public function get_discount_item_amount($amount) {
+  public function get_discount_item_amount($amount, $quantity) {
+    $price = $amount * $quantity;
     $total = WC()->cart->subtotal;
     $discount = WC()->cart->discount_cart;
-    return $amount > 0 ? $amount - $discount / ($total / $amount) : $amount;
+    return $amount > 0 ? ($price - $discount / ($total / $price)) / $quantity : $amount;
   }
 
   /**
@@ -143,7 +144,7 @@ class WC_Gateway_FastSpring_Builder {
 
       // Set our determined price
       $item['pricing']['price'] = [
-        get_woocommerce_currency() => self::get_discount_item_amount($price / $values['quantity']),
+        get_woocommerce_currency() => self::get_discount_item_amount($price, $values['quantity']),
       ];
 
       $items[] = $item;
