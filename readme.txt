@@ -51,3 +51,6 @@ N/A
 
 = 1.1.1 =
 * Improved subscription support.
+
+= 1.1.2 =
+* Bug fix.
