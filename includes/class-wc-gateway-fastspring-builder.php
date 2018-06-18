@@ -28,10 +28,14 @@ class WC_Gateway_FastSpring_Builder {
    * @return float
    */
   public function get_discount_item_amount($amount, $quantity) {
+
     $price = $amount * $quantity;
     $total = WC()->cart->subtotal;
     $discount = WC()->cart->discount_cart;
-    return $amount > 0 ? ($price - $discount / ($total / $price)) / $quantity : $amount;
+    $cost = $amount > 0 ? ($price - $discount / ($total / $price)) / $quantity : $amount;
+
+    self::log('Calculating pricing for amount of '.$amount.' and qty of '.$quantity.' with cart total of '.$total.' and discount of '.$discount.': '.$cost);
+    return $cost;
   }
 
   /**
@@ -47,7 +51,8 @@ class WC_Gateway_FastSpring_Builder {
 
     foreach (WC()->cart->cart_contents as $cart_item_key => $values) {
 
-      $price = $values['line_subtotal'];
+      $price = $values['line_subtotal'] / $values['quantity'];
+      $fee = 0;
 
       $product = $values['data'];
 
@@ -78,16 +83,10 @@ class WC_Gateway_FastSpring_Builder {
 
       );
 
-      $fee = 0;
+    
       
       // Subscriptions?
       if ($has_subscription_support) {
-
-        // If sub then the price we send FS needs to be subscription price not including fee
-        $price = WC_Subscriptions_Product::get_price($product->get_id());
-
-        // The signup fee - we need special handling for this later
-        $fee = WC_Subscriptions_Product::get_sign_up_fee($product->get_id());
 
         // Subsciption details such as period, length, etc
         $trial_end_date = WC_Subscriptions_Product::get_trial_expiration_date($product->get_id());
@@ -100,6 +99,12 @@ class WC_Gateway_FastSpring_Builder {
         $is_subscription = !empty($period);
 
         if($is_subscription) {
+
+          // If sub then the price we send FS needs to be subscription price not including fee
+          $price = WC_Subscriptions_Product::get_price($product->get_id());
+
+          // The signup fee - we need special handling for this later
+          $fee = WC_Subscriptions_Product::get_sign_up_fee($product->get_id());
 
           // Integer - number of free trial days for a subscription (required for subscription only)
           $item['pricing']['trial'] = $trial;
@@ -157,7 +162,7 @@ class WC_Gateway_FastSpring_Builder {
           'pricing' => [
             'quantityBehavior' => 'lock',
             'price' => [
-              get_woocommerce_currency() => $fee,
+              get_woocommerce_currency() => self::get_discount_item_amount($fee, $values['quantity'])
             ],
           ],
           'display' => [
@@ -310,5 +315,15 @@ class WC_Gateway_FastSpring_Builder {
   public function aes_key_generate() {
     return openssl_random_pseudo_bytes(16);
   }
+
+  /**
+   * Logs
+   *
+   * @param string $message
+   */
+  static public function log($message) {
+    WC_FastSpring::log($message);
+  }
+
 
 }

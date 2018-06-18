@@ -355,9 +355,10 @@ class WC_Gateway_FastSpring_Handler {
    *
    * @param string $message
    */
-  public function log($message) {
+  static public function log($message) {
     WC_FastSpring::log($message);
   }
+
 
 }
 

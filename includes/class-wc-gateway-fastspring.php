@@ -222,7 +222,7 @@ class WC_Gateway_FastSpring extends WC_Payment_Gateway {
    *
    * @param string $message
    */
-  public function log($message) {
+  static public function log($message) {
     WC_FastSpring::log($message);
   }
 
