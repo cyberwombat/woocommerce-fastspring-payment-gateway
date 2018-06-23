@@ -1,7 +1,7 @@
 ﻿=== FastSpring for WooCommerce ===
 Contributors: Enradia
 Tags: WooCommerce, Payment Gateway
-Version: 1.1.3
+Version: 1.1.4
 Requires PHP: 5.0.0
 Requires at least: 3.0
 Tested up to: 4.9.6
@@ -57,3 +57,6 @@ N/A
 
 = 1.1.3 =
 * Pricing bug fixed and improvements with coupons.
+
+= 1.1.4 =
+* Subscription pricing bug fixed.

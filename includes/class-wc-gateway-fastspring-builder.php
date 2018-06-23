@@ -27,14 +27,13 @@ class WC_Gateway_FastSpring_Builder {
    *
    * @return float
    */
-  public function get_discount_item_amount($amount, $quantity) {
+  static public function get_discount_item_amount($price, $quantity) {
 
-    $price = $amount * $quantity;
     $total = WC()->cart->subtotal;
     $discount = WC()->cart->discount_cart;
-    $cost = $amount > 0 ? ($price - $discount / ($total / $price)) / $quantity : $amount;
+    $cost = $price > 0 ? ($price - $discount / ($total / $price)) : $price;
 
-    self::log('Calculating pricing for amount of '.$amount.' and qty of '.$quantity.' with cart total of '.$total.' and discount of '.$discount.': '.$cost);
+    self::log('Calculating pricing for amount of '.$price.' and qty of '.$quantity.' with cart total of '.$total.' and discount of '.$discount.': '.$cost);
     return $cost;
   }
 
@@ -43,7 +42,7 @@ class WC_Gateway_FastSpring_Builder {
    *
    * @return object
    */
-  public function get_cart_items() {
+  static public function get_cart_items() {
 
     $items = array();
 
@@ -187,7 +186,7 @@ class WC_Gateway_FastSpring_Builder {
    *
    * @return string
    */
-  public function get_image($id, $size = 'shop_thumbnail', $attr = array(), $placeholder = true) {
+  static public function get_image($id, $size = 'shop_thumbnail', $attr = array(), $placeholder = true) {
 
     $data = wp_get_attachment_image_src($id, $size);
 
@@ -206,7 +205,7 @@ class WC_Gateway_FastSpring_Builder {
    *
    * @return object
    */
-  public function get_cart_customer_details() {
+  static public function get_cart_customer_details() {
 
     $order_id = absint(WC()->session->get('order_awaiting_payment'));
 
@@ -241,7 +240,7 @@ class WC_Gateway_FastSpring_Builder {
    *
    * @return array
    */
-  public function get_order_tags() {
+  static public function get_order_tags() {
     return array("store_order_id" => absint(WC()->session->get('order_awaiting_payment')));
   }
 
@@ -250,7 +249,7 @@ class WC_Gateway_FastSpring_Builder {
    *
    * @return object
    */
-  public function get_json_payload() {
+  static public function get_json_payload() {
     return array(
       'tags' => self::get_order_tags(),
       'contact' => self::get_cart_customer_details(),
@@ -263,7 +262,7 @@ class WC_Gateway_FastSpring_Builder {
    *
    * @return object
    */
-  public function get_secure_json_payload() {
+  static public function get_secure_json_payload() {
 
     $debug = defined('SCRIPT_DEBUG') && SCRIPT_DEBUG;
 
@@ -289,7 +288,7 @@ class WC_Gateway_FastSpring_Builder {
    * @param object
    * @return string
    */
-  public function encrypt_payload($aes_key, $string) {
+  static public function encrypt_payload($aes_key, $string) {
     $cipher = openssl_encrypt($string, "AES-128-ECB", $aes_key, OPENSSL_RAW_DATA);
     return base64_encode($cipher);
 
@@ -301,7 +300,7 @@ class WC_Gateway_FastSpring_Builder {
    * @param object
    * @return string
    */
-  public function encrypt_key($aes_key) {
+  static public function encrypt_key($aes_key) {
     $private_key = openssl_pkey_get_private(self::get_option('private_key'));
     openssl_private_encrypt($aes_key, $aes_key_encrypted, $private_key);
     return base64_encode($aes_key_encrypted);
@@ -312,7 +311,7 @@ class WC_Gateway_FastSpring_Builder {
    *
    * @return string
    */
-  public function aes_key_generate() {
+  static public function aes_key_generate() {
     return openssl_random_pseudo_bytes(16);
   }
 
