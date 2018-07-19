@@ -124,7 +124,7 @@ if (!class_exists('WC_FastSpring')):
       if ('fastspring' === $handle) {
 
         $debug = defined('SCRIPT_DEBUG') && SCRIPT_DEBUG ? 'true' : 'false';
-        return str_replace(' src', ' id="fsc-api"  data-storefront="' . $this->get_storefront_path() . '" data-before-requests-callback="fastspringBeforeRequestHandler" data-access-key="' . $this->get_option('access_key') . '" '. ($debug ?  data-debug="true" data-data-callback="dataCallbackFunction" data-error-callback="errorCallback" : '') data-popup-closed="fastspringPopupCloseHandler" '" src', $tag);
+        return str_replace(' src', ' id="fsc-api"  data-storefront="' . $this->get_storefront_path() . '" data-before-requests-callback="fastspringBeforeRequestHandler" data-access-key="' . $this->get_option('access_key') . '" '. ($debug ?  data-debug="true" data-data-callback="dataCallbackFunction" data-error-callback="errorCallback" : '') . ' data-popup-closed="fastspringPopupCloseHandler" src', $tag);
 
       }
       return $tag;
