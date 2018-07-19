@@ -5,7 +5,7 @@
  * Description: Accept credit card, PayPal, Amazon Pay and other payments on your store using FastSpring.
  * Author: Enradia
  * Author URI: https://enradia.com/
- * Version: 1.1.5
+ * Version: 1.1.6
  * Requires at least: 4.4
  * Tested up to: 4.9.6
  * WC requires at least: 3.0
@@ -124,7 +124,7 @@ if (!class_exists('WC_FastSpring')):
       if ('fastspring' === $handle) {
 
         $debug = defined('SCRIPT_DEBUG') && SCRIPT_DEBUG ? 'true' : 'false';
-        return str_replace(' src', ' id="fsc-api"  data-storefront="' . $this->get_storefront_path() . '" data-before-requests-callback="fastspringBeforeRequestHandler" data-access-key="' . $this->get_option('access_key') . '" data-popup-closed="fastspringPopupCloseHandler" data-debug="' . $debug . '" src', $tag);
+        return str_replace(' src', ' id="fsc-api"  data-storefront="' . $this->get_storefront_path() . '" data-before-requests-callback="fastspringBeforeRequestHandler" data-access-key="' . $this->get_option('access_key') . '" '. ($debug ?  data-debug="true" data-data-callback="dataCallbackFunction" data-error-callback="errorCallback" : '') data-popup-closed="fastspringPopupCloseHandler" '" src', $tag);
 
       }
       return $tag;

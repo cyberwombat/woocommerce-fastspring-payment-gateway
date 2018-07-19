@@ -14,6 +14,17 @@ function setLoadingOn () {
     }
   })
 }
+
+// Debug function
+function dataCallbackFunction (data) { // eslint-disable-line no-unused-vars
+  console.log('dataCallbackFunction:', data)
+}
+
+// Debug function
+function errorCallback (code, string) { // eslint-disable-line no-unused-vars
+  console.log('errorCallback: ', code, string)
+}
+
 // Get AJAX Url
 function getAjaxURL (endpoint) {
   return woocommerce_fastspring_params.ajax_url.toString().replace('%%endpoint%%', 'wc_fastspring_' + endpoint)

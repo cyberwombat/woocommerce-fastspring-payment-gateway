@@ -63,3 +63,6 @@ N/A
 
 = 1.1.5 =
 * Upgrade FastSpring JavasScript to 0.7.6.
+
+= 1.1.6 =
+* Added FS debug functions
