@@ -1,7 +1,7 @@
 ﻿=== FastSpring for WooCommerce ===
 Contributors: Enradia
 Tags: WooCommerce, Payment Gateway
-Version: 1.1.5
+Version: 1.1.7
 Requires PHP: 5.0.0
 Requires at least: 3.0
 Tested up to: 4.9.6
@@ -10,6 +10,7 @@ Stable tag: trunk
 License: MIT
 License URI: https://opensource.org/licenses/MIT
 Contributors: cyberwombat
+Donate link: https://www.paypal.com/donate/?token=SiMqCFR8nI8ciqqKR8EpxBhGrBTAt6ye5kevdwvLF5MGjGTAO_oN7o-vDlWvRiBrZopSw0&country.x=US&locale.x=US
 
 FastSpring For Woocommerce integrates your FastSpring account with your wordpress site
 

@@ -147,7 +147,7 @@ if (!class_exists('WC_FastSpring')):
         data-access-key=".. access key .."
         data-debug="true"
         data-continuous="true"
-*/
+      */
 
     }
 
