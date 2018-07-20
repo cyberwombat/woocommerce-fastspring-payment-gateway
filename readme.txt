@@ -66,3 +66,6 @@ N/A
 
 = 1.1.6 =
 * Added FS debug functions
+
+= 1.1.7 =
+* Update quantity handling for locked behavior
