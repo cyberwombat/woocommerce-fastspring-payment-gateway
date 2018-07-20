@@ -57,9 +57,9 @@ class WC_Gateway_FastSpring_Builder {
 
       $item = array(
         'product' => $product->get_slug(),
-        'quantity' => $values['quantity'],
         'pricing' => [
           'quantityBehavior' => 'lock',
+          'quantityDefault' =>  $values['quantity']
 
         ],
         // Customer visible product display name or title
