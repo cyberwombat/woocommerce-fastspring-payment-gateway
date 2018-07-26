@@ -57,7 +57,7 @@ class WC_Gateway_FastSpring extends WC_Payment_Gateway {
     $this->title = $this->option('title');
     $this->description = $this->option('description');
 
-    if ($this->option('testmode')) {
+    if ($this->get_option('testmode') === 'yes') {
       $this->description .= "\n" . sprintf(__('TEST MODE ENABLED. In test mode, you can use the card numbers provided in the test panel of the FastSpring dashboard. Please check the documentation "<a target="_blank" href="%s">Testing Orders</a>" for more information.', 'woocommerce-gateway-fastspring'), 'http://docs.fastspring.com/activity-events-orders-and-subscriptions/test-orders');
 
       $this->description = trim($this->description);

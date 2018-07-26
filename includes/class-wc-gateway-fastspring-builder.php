@@ -264,20 +264,18 @@ class WC_Gateway_FastSpring_Builder {
    */
   static public function get_secure_json_payload() {
 
-    $debug = defined('SCRIPT_DEBUG') && SCRIPT_DEBUG;
-
     $aes_key = self::aes_key_generate();
     $payload = self::get_json_payload();
     $encypted = self::encrypt_payload($aes_key, json_encode($payload));
     $key = self::encrypt_key($aes_key);
 
-    return $debug ? [
+    return self::get_option('testmode') === 'yes' ? [
       'payload' => $payload,
-      'key' => '',
+      'key' => ''
 
     ] : [
       'payload' => $encypted,
-      'key' => $key,
+      'key' => $key
 
     ];
   }

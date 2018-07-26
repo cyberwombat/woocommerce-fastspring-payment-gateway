@@ -64,6 +64,7 @@ function requestPaymentCompletionUrl (data, cb) { // eslint-disable-line no-unus
 }
 // Launch FS (popup or redirect)
 function launchFastSpring (session) {
+  console.log(session)
   fastspring.builder.secure(session.payload, session.key)
   fastspring.builder.checkout()
 }

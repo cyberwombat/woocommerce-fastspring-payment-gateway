@@ -70,3 +70,6 @@ N/A
 
 = 1.1.7 =
 * Update quantity handling for locked behavior
+
+= 1.1.8 =
+* Test mode cleanup
