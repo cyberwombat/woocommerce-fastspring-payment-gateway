@@ -1,11 +1,10 @@
 <?php
-
 /*
  * Plugin Name: WooCommerce FastSpring Gateway
  * Description: Accept credit card, PayPal, Amazon Pay and other payments on your store using FastSpring.
  * Author: Enradia
  * Author URI: https://enradia.com/
- * Version: 1.1.8
+ * Version: 1.2.0
  * Requires at least: 4.4
  * Tested up to: 4.9.6
  * WC requires at least: 3.0
@@ -21,6 +20,7 @@ if (!defined('ABSPATH')) {
 /**
  * Required minimums and constants
  */
+define('WC_FASTSPRING_VERSION', '1.2.0');
 define('WC_FASTSPRING_SCRIPT', 'https://d1f8f9xcsvx3ha.cloudfront.net/sbl/0.7.6/fastspring-builder.min.js');
 define('WC_FASTSPRING_VERSION', '1.0.5');
 define('WC_FASTSPRING_MIN_PHP_VER', '5.6.0');
@@ -107,9 +107,13 @@ if (!class_exists('WC_FastSpring')):
      * @return string storefront path
      */
     protected function get_storefront_path() {
-      return $this->get_option('testmode') === 'yes'
-      ? str_replace('onfastspring.com', 'test.onfastspring.com', $this->get_option('storefront_path'))
-      : str_replace('test.onfastspring.com', 'onfastspring.com', $this->get_option('storefront_path'));
+
+      $path = $this->get_option('storefront_path');
+      return $this->get_option('testmode')
+      ? (strrpos($path, 'test.onfastspring.com') 
+        ? $path 
+        : str_replace('onfastspring.com', 'test.onfastspring.com', $path))
+      : str_replace('test.onfastspring.com', 'onfastspring.com', $path);
     }
 
     /**
@@ -124,7 +128,7 @@ if (!class_exists('WC_FastSpring')):
       if ('fastspring' === $handle) {
 
         $debug = defined('SCRIPT_DEBUG') && SCRIPT_DEBUG ? 'true' : 'false';
-        return str_replace(' src', ' id="fsc-api"  data-storefront="' . $this->get_storefront_path() . '" data-before-requests-callback="fastspringBeforeRequestHandler" data-access-key="' . $this->get_option('access_key') . '" '. ($debug ? 'data-debug="true" data-data-callback="dataCallbackFunction" data-error-callback="errorCallback"' : '') . ' data-popup-closed="fastspringPopupCloseHandler" src', $tag);
+        return str_replace(' src', ' id="fsc-api" data-storefront="' . $this->get_storefront_path() . '" data-before-requests-callback="fastspringBeforeRequestHandler" data-access-key="' . $this->get_option('access_key') . '" '. ($debug ? 'data-debug="true" data-test="' . ($this->get_option('testmode') ? 'yes' : 'no') . '" data-version="' . WC_FASTSPRING_VERSION .'" data-data-callback="dataCallbackFunction" data-error-callback="errorCallback"' : '') . ' data-popup-closed="fastspringPopupCloseHandler" src', $tag);
 
       }
       return $tag;
