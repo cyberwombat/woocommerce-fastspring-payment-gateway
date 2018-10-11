@@ -1,7 +1,7 @@
 ﻿=== FastSpring for WooCommerce ===
 Contributors: Enradia
 Tags: WooCommerce, Payment Gateway
-Version: 1.2.0
+Version: 1.2.1
 Requires PHP: 5.0.0
 Requires at least: 3.0
 Tested up to: 4.9.6
@@ -79,3 +79,6 @@ N/A
 
 = 1.2.0 =
 * Checkbox setting issue fix
+
+= 1.2.1 =
+* Refactor settings code

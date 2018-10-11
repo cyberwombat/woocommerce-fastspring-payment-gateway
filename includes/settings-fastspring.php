@@ -1,9 +1,10 @@
 <?php
 if (!defined('ABSPATH')) {
-  exit;
+    exit;
 }
 
-return apply_filters('woocommerce-gateway-fastspring_settings',
+return apply_filters(
+    'woocommerce-gateway-fastspring_settings',
 
   array(
     'enabled' => array(
@@ -11,7 +12,7 @@ return apply_filters('woocommerce-gateway-fastspring_settings',
       'label' => __('Enable FastSpring payment gateway', 'woocommerce-gateway-fastspring'),
       'type' => 'checkbox',
       'description' => '',
-      'default' => false,
+      'default' => 'no',
     ),
     'title' => array(
       'title' => __('Title', 'woocommerce-gateway-fastspring'),
@@ -32,7 +33,7 @@ return apply_filters('woocommerce-gateway-fastspring_settings',
       'label' => __('Enable Test Mode', 'woocommerce-gateway-fastspring'),
       'type' => 'checkbox',
       'description' => __('Places the payment gateway in test mode. In this mode, you can use the card numbers provided in the test panel of the FastSpring dashboard. Please check the documentation "<a target="_blank" href="http://docs.fastspring.com/activity-events-orders-and-subscriptions/test-orders">Testing Orders</a>" for more information.', 'woocommerce-gateway-fastspring'),
-      'default' => false,
+      'default' =>  'no',
       'desc_tip' => false,
     ),
     'logging' => array(
@@ -40,7 +41,7 @@ return apply_filters('woocommerce-gateway-fastspring_settings',
       'label' => __('Log debug messages', 'woocommerce-gateway-fastspring'),
       'type' => 'checkbox',
       'description' => __('Save debug messages to the WooCommerce System Status log.', 'woocommerce-gateway-fastspring'),
-      'default' => false,
+      'default' =>  'no',
     ),
     'storefront_path' => array(
       'title' => __('Storefront', 'woocommerce-gateway-fastspring'),
@@ -53,7 +54,7 @@ return apply_filters('woocommerce-gateway-fastspring_settings',
       'label' => __('Remove billing address fields from checkout.', 'woocommerce-gateway-fastspring'),
       'type' => 'checkbox',
       'description' => __('If no other payment gateway requires these fields they can be removed as FastSpring does not use them.'),
-      'default' => true,
+      'default' => 'yes',
     ),
     'api_details' => array(
       'title' => __('Access Credentials', 'woocommerce-gateway-fastspring'),
