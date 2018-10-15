@@ -17,6 +17,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
+
 /**
  * Required minimums and constants
  */
@@ -372,7 +373,7 @@ if (!class_exists('WC_FastSpring')):
       {
 
           // Static function so we need to get options another way
-          $settings = get_setting('woocommerce_fastspring_settings', array());
+          $settings = self::get_setting('woocommerce_fastspring_settings', array());
 
           if ($settings['logging'] || defined('WP_DEBUG') && WP_DEBUG) {
               if (empty(self::$log)) {
