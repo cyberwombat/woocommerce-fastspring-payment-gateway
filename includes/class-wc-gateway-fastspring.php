@@ -69,8 +69,6 @@ class WC_Gateway_FastSpring extends WC_Payment_Gateway
         add_action('wp_enqueue_scripts', array($this, 'payment_scripts'));
         add_action('woocommerce_update_options_payment_gateways_' . $this->id, array($this, 'process_admin_options'));
         add_action('woocommerce_api_wc_gateway_fastspring_commerce', array($this, 'return_handler'));
-
-        $this->icon = apply_filters('woocommerce_gateway_icon', plugins_url('../assets/img/payment.png', __FILE__));
     }
 
     /**
@@ -143,6 +141,61 @@ class WC_Gateway_FastSpring extends WC_Payment_Gateway
     }
 
     /**
+     * Get_icon function.
+     *
+     * @return string
+     */
+    public function get_icon()
+    {
+        $icons = $this->payment_icons();
+
+        $icons_str = '';
+
+        $icons_str .= isset( $icons['paypal'] ) ? $icons['paypal'] : '';
+        $icons_str .= isset( $icons['visa'] ) ? $icons['visa'] : '';
+        $icons_str .= isset( $icons['amex'] ) ? $icons['amex'] : '';
+        $icons_str .= isset( $icons['mastercard'] ) ? $icons['mastercard'] : '';
+
+        if ( 'USD' === get_woocommerce_currency() ) {
+            $icons_str .= isset( $icons['discover'] ) ? $icons['discover'] : '';
+            $icons_str .= isset( $icons['jcb'] ) ? $icons['jcb'] : '';
+            $icons_str .= isset( $icons['diners'] ) ? $icons['diners'] : '';
+        }
+
+        $icons_str .= isset( $icons['ideal'] ) ? $icons['ideal'] : '';
+        $icons_str .= isset( $icons['unionpay'] ) ? $icons['unionpay'] : '';
+        $icons_str .= isset( $icons['sofort'] ) ? $icons['sofort'] : '';
+
+        return apply_filters( 'woocommerce_gateway_icon', $icons_str, $this->id );
+    }
+
+    /**
+     * All payment icons that work with Stripe. Some icons references
+     * WC core icons.
+     *
+     * @return array
+     */
+    public function payment_icons()
+    {
+        return apply_filters(
+            'wc_fastspring_payment_icons',
+            array(
+                'paypal'     => '<img src="' . WC_FASTSPRING_PLUGIN_URL . '/assets/img/paypal.svg" class="fastspring-visa-icon fastspring-icon" alt="PayPal" />',
+                'visa'       => '<img src="' . WC_FASTSPRING_PLUGIN_URL . '/assets/img/visa.svg" class="fastspring-visa-icon fastspring-icon" alt="Visa" />',
+                'amex'       => '<img src="' . WC_FASTSPRING_PLUGIN_URL . '/assets/img/amex.svg" class="fastspring-amex-icon fastspring-icon" alt="American Express" />',
+                'mastercard' => '<img src="' . WC_FASTSPRING_PLUGIN_URL . '/assets/img/mastercard.svg" class="fastspring-mastercard-icon fastspring-icon" alt="Mastercard" />',
+                'discover'   => '<img src="' . WC_FASTSPRING_PLUGIN_URL . '/assets/img/discover.svg" class="fastspring-discover-icon fastspring-icon" alt="Discover" />',
+                'diners'     => '<img src="' . WC_FASTSPRING_PLUGIN_URL . '/assets/img/diners.svg" class="fastspring-diners-icon fastspring-icon" alt="Diners" />',
+                'jcb'        => '<img src="' . WC_FASTSPRING_PLUGIN_URL . '/assets/img/jcb.svg" class="fastspring-jcb-icon fastspring-icon" alt="JCB" />',
+                'ideal'      => '<img src="' . WC_FASTSPRING_PLUGIN_URL . '/assets/img/ideal.svg" class="fastspring-ideal-icon fastspring-icon" alt="iDeal" />',
+                'giropay'    => '<img src="' . WC_FASTSPRING_PLUGIN_URL . '/assets/img/giropay.svg" class="fastspring-giropay-icon fastspring-icon" alt="Giropay" />',
+                'sofort'     => '<img src="' . WC_FASTSPRING_PLUGIN_URL . '/assets/img/sofort.svg" class="fastspring-sofort-icon fastspring-icon" alt="SOFORT" />',
+                'unionpay'   => '<img src="' . WC_FASTSPRING_PLUGIN_URL . '/assets/img/unionpay.svg" class="fastspring-unionpay-icon fastspring-icon" alt="Union Pay" />',
+            )
+        );
+    }
+
+    /**
      * Initialise gateway settings form fields
      */
     public function init_form_fields()
@@ -185,6 +238,12 @@ class WC_Gateway_FastSpring extends WC_Payment_Gateway
               'receipt' => wp_create_nonce('wc-fastspring-receipt'),
             ),
           );
+
+        $custom_css = '.woocommerce-checkout #payment ul.payment_methods li img.fastspring-icon { max-width: 40px; padding-left: 3px; margin: 0; }';
+        $custom_css .= '.woocommerce-checkout #payment ul.payment_methods li img.fastspring-ideal-icon { max-height: 26px; }';
+        $custom_css .= '.woocommerce-checkout #payment ul.payment_methods li img.fastspring-sofort-icon { max-width: 55px; magin-left: 3px; }';
+
+        wp_add_inline_style( 'woocommerce-inline', $custom_css );
 
         wp_localize_script('woocommerce_fastspring', 'woocommerce_fastspring_params', apply_filters('woocommerce_fastspring_params', $fastspring_params));
     }
