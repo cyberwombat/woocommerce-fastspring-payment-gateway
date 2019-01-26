@@ -43,11 +43,11 @@ class WC_Gateway_FastSpring_Handler
     }
 
     /**
-          * Fetch plugin option
-          *
-          * @param $o Option key
-          * @return mixed option value
-          */
+     * Fetch plugin option
+     *
+     * @param $o Option key
+     * @return mixed option value
+     */
     public static function get_setting($o)
     {
         return isset(self::$settings[$o]) ? (self::$settings[$o] === 'yes' ? true : (self::$settings[$o] === 'no' ? false : self::$settings[$o])) : null;
@@ -122,6 +122,7 @@ class WC_Gateway_FastSpring_Handler
             WC()->cart->empty_cart();
 
             $order->set_transaction_id($payload->reference);
+            $order->update_meta_data('fs_order_id', $payload->id);
 
             if ($status === 'completed' && $order->payment_complete($payload->reference)) {
                 $this->log(sprintf('Marking order ID %s as complete', $order->get_id()));
@@ -154,7 +155,7 @@ class WC_Gateway_FastSpring_Handler
             $return_url = wc_get_endpoint_url('order-received', '', wc_get_page_permalink('checkout'));
         }
 
-        if (is_ssl() || get_setting('woocommerce_force_ssl_checkout') == 'yes') {
+        if (is_ssl() || get_option('woocommerce_force_ssl_checkout') == 'yes') {
             $return_url = str_replace('http:', 'https:', $return_url);
         }
 
@@ -247,7 +248,7 @@ class WC_Gateway_FastSpring_Handler
                 case 'subscription.deactivated':
                   $this->handle_webhook_request_subscription_deactivate($payload);
                   break;
-                  
+
                 case 'subscription.activated':
                   $this->handle_webhook_request_subscription_acivate($payload);
                   break;

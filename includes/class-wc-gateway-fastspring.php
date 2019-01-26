@@ -207,6 +207,24 @@ class WC_Gateway_FastSpring extends WC_Payment_Gateway
     }
 
     /**
+     * Get FS Transaction URL
+     *
+     * @param  \WC_Order $order
+     *
+     * @return string
+     */
+    public function get_transaction_url( $order )
+    {
+        $transaction_id = $order->get_transaction_id();
+
+        if ( $order->meta_exists('fs_order_id') ) {
+            return 'https://dashboard.fastspring.com/order/home.xml?mRef=AcquisitionTransaction:' . $order->get_meta('fs_order_id');
+        }
+
+        return '';
+    }
+
+    /**
      * Options
      *
      * @param string $option option name
