@@ -28,6 +28,27 @@ return apply_filters(
       'default' => __('Pay with credit card, PayPal, Amazon Pay and more.', 'woocommerce-gateway-fastspring'),
       'desc_tip' => false,
     ),
+    'icons' => array(
+      'title' => __('Payment Icons', 'woocommerce-gateway-fastspring'),
+      'type' => 'multiselect',
+      'description' => __('Select the payment method icons to show.', 'woocommerce-gateway-fastspring'),
+      'default' => array( 'paypal', 'visa', 'mastercard', 'amex' ),
+      'desc_tip' => false,
+      'class'       => 'wc-enhanced-select',
+      'options' => array(
+        'paypal' => 'paypal',
+        'visa' => 'visa',
+        'mastercard' => 'mastercard',
+        'amex' => 'amex',
+        'discover' => 'discover',
+        'jcb' => 'jcb',
+        'diners' => 'diners',
+        'ideal' => 'ideal',
+        'unionpay' => 'unionpay',
+        'sofort' => 'sofort',
+        'giropay' => 'giropay',
+      )
+    ),
     'testmode' => array(
       'title' => __('Test mode', 'woocommerce-gateway-fastspring'),
       'label' => __('Enable Test Mode', 'woocommerce-gateway-fastspring'),
@@ -76,7 +97,7 @@ return apply_filters(
     'order_verification' => array(
       'title' => __('Order Verification', 'woocommerce-gateway-fastspring'),
       'type' => 'title',
-      'description' => __('In order to allow FastSpring to mark orders as completed within WooCommerce you can either use a Webhook or the FastSpring API. if you are using a hosted storefront you must use the webhook method. If, instead, you are using a popup storefront you may use either a webhook or an API call (or both). <h4>Webhook Method Instructions</h4>In order to use the webhook method, generate a secret below and enter it along with your webhook URL (<i>' . site_url('?wc-api=wc_gateway_fastspring', 'https') . '</i>) in the FastSpring dashboard under <i>Integrations > Webhooks</i> in the HMAC SHA256 Secret and URL fields respectively.<h4>API Method Instructions</h4>To use the API verification method enter your API username and password below. These can be generated from the FastSpring dashboard under <i>Integrations > API Credentials</i>.', 'woocommerce-gateway-fastspring'),
+      'description' => __('In order to allow FastSpring to mark orders as completed within WooCommerce you can either use a Webhook or the FastSpring API. if you are using a hosted storefront you must use the webhook method. If, instead, you are using a popup storefront you may use either a webhook or an API call (or both). <h4>Webhook Method Instructions</h4>In order to use the webhook method, generate a secret below and enter it along with your webhook URL (<code>' . site_url('?wc-api=wc_gateway_fastspring', 'https') . '</code>) in the FastSpring dashboard under <i>Integrations > Webhooks</i> in the HMAC SHA256 Secret and URL fields respectively.<h4>API Method Instructions</h4>To use the API verification method enter your API username and password below. These can be generated from the FastSpring dashboard under <i>Integrations > API Credentials</i>.', 'woocommerce-gateway-fastspring'),
     ),
     'webhook_secret' => array(
       'title' => __('Webhook Secret', 'woocommerce-gateway-fastspring'),
@@ -93,7 +114,7 @@ return apply_filters(
     ),
     'api_password' => array(
       'title' => __('API Password', 'woocommerce-gateway-fastspring'),
-      'type' => 'text',
+      'type' => 'password',
       'description' => __('Your FastSpring API password.', 'woocommerce-gateway-fastspring'),
       'desc_tip' => false,
     ),

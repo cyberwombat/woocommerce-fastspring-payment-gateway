@@ -148,23 +148,20 @@ class WC_Gateway_FastSpring extends WC_Payment_Gateway
     public function get_icon()
     {
         $icons = $this->payment_icons();
+        $icons_enabled = self::get_setting('icons');
 
         $icons_str = '';
-
-        $icons_str .= isset( $icons['paypal'] ) ? $icons['paypal'] : '';
-        $icons_str .= isset( $icons['visa'] ) ? $icons['visa'] : '';
-        $icons_str .= isset( $icons['amex'] ) ? $icons['amex'] : '';
-        $icons_str .= isset( $icons['mastercard'] ) ? $icons['mastercard'] : '';
-
-        if ( 'USD' === get_woocommerce_currency() ) {
-            $icons_str .= isset( $icons['discover'] ) ? $icons['discover'] : '';
-            $icons_str .= isset( $icons['jcb'] ) ? $icons['jcb'] : '';
-            $icons_str .= isset( $icons['diners'] ) ? $icons['diners'] : '';
-        }
-
-        $icons_str .= isset( $icons['ideal'] ) ? $icons['ideal'] : '';
-        $icons_str .= isset( $icons['unionpay'] ) ? $icons['unionpay'] : '';
-        $icons_str .= isset( $icons['sofort'] ) ? $icons['sofort'] : '';
+        $icons_str .= in_array( 'paypal', $icons_enabled ) ? $icons['paypal'] : '';
+        $icons_str .= in_array( 'visa', $icons_enabled ) ? $icons['visa'] : '';
+        $icons_str .= in_array( 'amex', $icons_enabled ) ? $icons['amex'] : '';
+        $icons_str .= in_array( 'mastercard', $icons_enabled ) ? $icons['mastercard'] : '';
+        $icons_str .= in_array( 'discover', $icons_enabled ) ? $icons['discover'] : '';
+        $icons_str .= in_array( 'jcb', $icons_enabled ) ? $icons['jcb'] : '';
+        $icons_str .= in_array( 'diners', $icons_enabled ) ? $icons['diners'] : '';
+        $icons_str .= in_array( 'ideal', $icons_enabled ) ? $icons['ideal'] : '';
+        $icons_str .= in_array( 'unionpay', $icons_enabled ) ? $icons['unionpay'] : '';
+        $icons_str .= in_array( 'sofort', $icons_enabled ) ? $icons['sofort'] : '';
+        $icons_str .= in_array( 'giropay', $icons_enabled ) ? $icons['giropay'] : '';
 
         return apply_filters( 'woocommerce_gateway_icon', $icons_str, $this->id );
     }
