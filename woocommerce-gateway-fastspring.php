@@ -4,7 +4,7 @@
  * Description: Accept credit card, PayPal, Amazon Pay and other payments on your store using FastSpring.
  * Author: Enradia
  * Author URI: https://enradia.com/
- * Version: 1.2.3
+ * Version: 1.2.4
  * Requires at least: 4.4
  * Tested up to: 4.9.6
  * WC requires at least: 3.0
@@ -22,11 +22,11 @@ if (!defined('ABSPATH')) {
  * Required minimums and constants
  */
 define('WC_FASTSPRING_VERSION', '1.2.2');
-define('WC_FASTSPRING_SCRIPT', 'https://d1f8f9xcsvx3ha.cloudfront.net/sbl/0.7.6/fastspring-builder.min.js');
+define('WC_FASTSPRING_SCRIPT', 'https://d1f8f9xcsvx3ha.cloudfront.net/sbl/0.8.3/fastspring-builder.min.js');
 define('WC_FASTSPRING_MIN_PHP_VER', '5.6.0');
 define('WC_FASTSPRING_MIN_WC_VER', '3.0.0');
 define('WC_FASTSPRING_MAIN_FILE', __FILE__);
-define('WC_FASTSPRING_PLUGIN_URL', plugins_url( '', __FILE__ ));
+define('WC_FASTSPRING_PLUGIN_URL', plugins_url('', __FILE__));
 
 if (!class_exists('WC_FastSpring')):
 

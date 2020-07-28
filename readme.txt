@@ -88,3 +88,6 @@ N/A
 
 = 1.2.3 =
 * Support for payemnt icons, transaction URL
+
+= 1.2.4 =
+* Upgrade FastSpring JavasScript to 0.8.3
