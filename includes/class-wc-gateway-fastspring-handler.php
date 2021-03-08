@@ -106,6 +106,8 @@ class WC_Gateway_FastSpring_Handler
 
         $order_id = absint(WC()->session->get('current_order'));
 
+        $this->log(sprintf('Generating receipt for order %s', $order_id));
+
         $order = wc_get_order($order_id);
         $data = ['order_id' => $order->get_id()];
 
@@ -125,7 +127,7 @@ class WC_Gateway_FastSpring_Handler
             $order->update_meta_data('fs_order_id', $payload->id);
 
             if ($status === 'completed' && $order->payment_complete($payload->reference)) {
-                $this->log(sprintf('Marking order ID %s as complete', $order->get_id()));
+                $this->log(sprintf('Marking order ID %s as completed', $order->get_id()));
                 $order->add_order_note(sprintf(__('FastSpring payment approved (ID: %1$s)', 'woocommerce'), $order->get_id()));
             }
             // We could have a race condition where FS already called webhook so lets not assume its pending
@@ -151,8 +153,10 @@ class WC_Gateway_FastSpring_Handler
     {
         if ($order) {
             $return_url = $order->get_checkout_order_received_url();
+            self::log(sprintf('Receipt URL for order set to %s', $return_url));
         } else {
             $return_url = wc_get_endpoint_url('order-received', '', wc_get_page_permalink('checkout'));
+            self::log(sprintf('Receipt URL set to %s', $return_url));
         }
 
         if (is_ssl() || get_option('woocommerce_force_ssl_checkout') == 'yes') {
@@ -160,6 +164,8 @@ class WC_Gateway_FastSpring_Handler
         }
 
         $filtered = apply_filters('woocommerce_get_return_url', $return_url, $order);
+        
+        self::log(sprintf('Final filtered receipt URL set to %s', $filtered));
 
         return $filtered;
     }
@@ -250,7 +256,7 @@ class WC_Gateway_FastSpring_Handler
                   break;
 
                 case 'subscription.activated':
-                  $this->handle_webhook_request_subscription_acivate($payload);
+                  $this->handle_webhook_request_subscription_activate($payload);
                   break;
 
                 case 'subscription.updated':
@@ -262,7 +268,7 @@ class WC_Gateway_FastSpring_Handler
                   break;
                 }
 
-                $this->log(json_encode($payload));
+            $this->log(json_encode($payload));
             return wp_send_json_success();
         } catch (Exception $e) {
             return wp_send_json_error($e->getMessage());

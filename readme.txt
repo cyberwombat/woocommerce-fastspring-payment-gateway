@@ -91,3 +91,6 @@ N/A
 
 = 1.2.4 =
 * Upgrade FastSpring JavasScript to 0.8.3
+
+= 1.2.5 =
+* Fix typo causing subscription activate issues
