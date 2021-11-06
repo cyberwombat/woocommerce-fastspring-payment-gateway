@@ -1,8 +1,11 @@
 # WooCommerce FastSpring Payment Gateway plugin
 
-FastSpring For Woocommerce integrates your [FastSpring](http://fastspring.com) account with your WordPress site. It provides support for both the hosted and popup version of FastSpring and provides webhook and API support for order validation as well as subscription support.
+## NOT CURRENTLY MAINTAINED
+WHile this plugin works well with some older Woo versions and perhaps current ones I do not have the time to really maintain it. I will accept PRs though.
 
-## Insallation
+FastSpring For WooCommerce integrates your [FastSpring](http://fastspring.com) account with your WordPress site. It provides support for both the hosted and popup version of FastSpring and provides webhook and API support for order validation as well as subscription support.
+
+## Installation
 
 View installation instructions [here](https://github.com/cyberwombat/woocommerce-fastspring-payment-gateway/wiki).
 
